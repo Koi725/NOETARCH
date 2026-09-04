@@ -1,0 +1,91 @@
+schema_version: 1
+default_effect: deny
+capabilities:
+  inspect_repository:
+    ceo: allow
+    senior_claude_co_cto: allow
+    gpt_codex_co_cto: allow
+    architecture_lead: delegated
+    orchestration_lead: delegated
+    specialist_worker: delegated
+  edit_delegated_files:
+    ceo: allow
+    senior_claude_co_cto: delegated
+    gpt_codex_co_cto: delegated
+    architecture_lead: delegated
+    orchestration_lead: delegated
+    specialist_worker: delegated
+  run_bounded_local_checks:
+    ceo: allow
+    senior_claude_co_cto: delegated
+    gpt_codex_co_cto: delegated
+    architecture_lead: delegated
+    orchestration_lead: delegated
+    specialist_worker: delegated
+  use_nonsecret_shared_memory:
+    ceo: allow
+    senior_claude_co_cto: delegated
+    gpt_codex_co_cto: delegated
+    architecture_lead: delegated
+    orchestration_lead: delegated
+    specialist_worker: delegated
+  spawn_bounded_workers:
+    ceo: allow
+    senior_claude_co_cto: delegated
+    gpt_codex_co_cto: delegated
+    architecture_lead: deny
+    orchestration_lead: delegated
+    specialist_worker: deny
+  git_read_only:
+    ceo: allow
+    senior_claude_co_cto: allow
+    gpt_codex_co_cto: allow
+    architecture_lead: delegated
+    orchestration_lead: delegated
+    specialist_worker: delegated
+  git_mutation:
+    ceo: allow
+    senior_claude_co_cto: deny
+    gpt_codex_co_cto: deny
+    architecture_lead: deny
+    orchestration_lead: deny
+    specialist_worker: deny
+  change_governance:
+    ceo: allow
+    senior_claude_co_cto: propose_only
+    gpt_codex_co_cto: propose_only
+    architecture_lead: propose_only
+    orchestration_lead: propose_only
+    specialist_worker: deny
+  access_secrets:
+    ceo: allow
+    senior_claude_co_cto: explicit_ceo_approval
+    gpt_codex_co_cto: explicit_ceo_approval
+    architecture_lead: deny
+    orchestration_lead: deny
+    specialist_worker: deny
+  release_or_publish:
+    ceo: allow
+    senior_claude_co_cto: deny
+    gpt_codex_co_cto: deny
+    architecture_lead: deny
+    orchestration_lead: deny
+    specialist_worker: deny
+ruflo:
+  may:
+    - coordinate_approved_tasks
+    - maintain_nonsecret_shared_memory
+    - route_approved_work
+    - record_agent_status
+    - run_approved_workers
+    - collect_results
+  may_not:
+    - grant_permissions
+    - change_rbac
+    - self_approve
+    - mutate_git
+    - release_or_publish
+    - access_secrets_without_explicit_ceo_approval
+    - expand_agent_permissions
+    - modify_authoritative_governance
+

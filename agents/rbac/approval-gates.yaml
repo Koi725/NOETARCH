@@ -1,0 +1,31 @@
+schema_version: 1
+default: blocked_until_explicitly_approved
+gates:
+  governance_change:
+    approver: ceo
+    evidence_required: [proposal, affected_files, conflict_check, rollback_plan]
+  ruflo_activation_or_upgrade:
+    approver: ceo
+    evidence_required: [exact_versions, integrity_metadata, lockfile_review, dependency_audit, isolated_init_diff, security_boundary]
+  secret_access:
+    approver: ceo
+    evidence_required: [secret_reference_not_value, purpose, recipients, duration, revocation_plan]
+  network_listener:
+    approver: ceo
+    evidence_required: [bind_address, authentication, exposed_tools, threat_review, shutdown_plan]
+  worker_shell_or_network_expansion:
+    approver: ceo
+    evidence_required: [task, exact_commands_or_destinations, sandbox, timeout, output_limits]
+  autopilot_federation_or_background_loop:
+    approver: ceo
+    initial_state: prohibited
+    evidence_required: [separate_architecture_decision, threat_review, resource_limits, kill_switch]
+  git_mutation_or_release:
+    executor: ceo
+    delegation_allowed: false
+    evidence_required: [reviewed_diff, validation_results]
+rulings:
+  silence_is_approval: false
+  tool_availability_is_authority: false
+  orchestrator_may_approve_itself: false
+

@@ -1,0 +1,38 @@
+schema_version: 1
+roles:
+  ceo:
+    actor_type: human
+    authority_rank: 100
+    technical_weight: null
+    definition: agents/roles/CEO.md
+  senior_claude_co_cto:
+    actor_type: agent
+    authority_rank: 80
+    technical_weight: 10
+    definition: agents/roles/SENIOR_CLAUDE_CO_CTO.md
+  gpt_codex_co_cto:
+    actor_type: agent
+    authority_rank: 70
+    technical_weight: 8
+    definition: agents/roles/GPT_CODEX_CO_CTO.md
+  architecture_lead:
+    actor_type: delegated_agent
+    authority_rank: 40
+    technical_weight: null
+    definition: agents/roles/ARCHITECTURE_LEAD.md
+  orchestration_lead:
+    actor_type: delegated_agent
+    authority_rank: 40
+    technical_weight: null
+    definition: agents/roles/ORCHESTRATION_LEAD.md
+  specialist_worker:
+    actor_type: delegated_agent
+    authority_rank: 20
+    technical_weight: null
+    definition: agents/roles/SPECIALIST_WORKER.md
+non_authority_components:
+  - ruflo
+  - shared_memory
+  - metaharness
+  - security_scanner
+
