@@ -1,0 +1,12 @@
+# Non-executable example. Do not copy into .codex/config.toml until the CEO
+# approves an exact lockfile and the local entrypoint has been verified.
+[mcp_servers.ruflo]
+command = "node"
+args = ["node_modules/@claude-flow/cli/bin/mcp-server.js"]
+enabled = false
+required = false
+startup_timeout_sec = 10
+tool_timeout_sec = 60
+default_tools_approval_mode = "prompt"
+enabled_tools = ["memory_search", "memory_store"]
+
