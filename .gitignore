@@ -1,0 +1,44 @@
+# Secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+credentials.json
+credentials.*.json
+secrets/
+
+# Dependencies and build output
+node_modules/
+dist/
+build/
+coverage/
+
+# Logs and temporary files
+*.log
+logs/
+tmp/
+temp/
+*.tmp
+*.swp
+.DS_Store
+
+# Ruflo and agent runtime state (governance configuration remains tracked)
+.claude-flow/
+.swarm/
+.ruflo/
+**/memory.db
+**/memory.db-*
+**/*.sqlite
+**/*.sqlite-*
+**/sessions/
+**/.cache/
+
+# Machine-local client state and credential-bearing overrides
+.codex/config.local.toml
+.codex/AGENTS.override.md
+.claude/settings.local.json
+.claude/*.local.json
+
