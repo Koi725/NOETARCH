@@ -42,3 +42,9 @@ temp/
 .claude/settings.local.json
 .claude/*.local.json
 
+.claude-flow/
+ruvector.db
+.swarm/
+*.rvf
+agentdb.rvf*
+.claude/
