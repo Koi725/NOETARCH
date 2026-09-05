@@ -1,0 +1,1 @@
+"""NOETARCH backend package."""
