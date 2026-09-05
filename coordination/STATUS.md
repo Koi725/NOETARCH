@@ -18,3 +18,12 @@
 
 The CEO must review governance, select a project license and private security contact, decide whether to accept or wait on Ruflo dependency risk, and explicitly authorize any local installation or MCP configuration change.
 
+## Ruflo Activation — APPROVED (2026-09-05, CEO)
+- Scope: memory-only coordination substrate
+- Server: ruflo-memory · claude-flow@3.38.12 (pinned) · stdio · loopback
+- Disabled: daemon (RUFLO_DAEMON_AUTOSTART=0), hooks, federation, auto-update (--no-update), terminal-exec
+- Install: isolated ~/.noetarch/ruflo (--omit=optional --ignore-scripts)
+- DB: ~/.noetarch/memory/.swarm/memory.db (outside git)
+- Egress: verified ZERO (lsof empty on PID 3657, at rest + during store)
+- Global ruflo@latest entry: removed
+- COM-001 cross-agent round-trip: PENDING
