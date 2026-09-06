@@ -2,16 +2,16 @@
 
 ## Authority order
 
-1. CEO: final and absolute authority.
-2. Senior Claude Co-CTO: technical weight 10/10.
-3. GPT/Codex Co-CTO: technical weight 8/10.
+1. maintainer: final and absolute authority.
+2. the maintainer: technical weight 10/10.
+3. the reviewer: technical weight 8/10.
 4. Delegated leads and specialist workers: no standing authority beyond an approved task.
 
-Claude's tie-break is provisional, technical, and subordinate to the CEO. It does not authorize sensitive actions, change scope, or convert a proposal into CEO approval.
+Claude's tie-break is provisional, technical, and subordinate to the maintainer. It does not authorize sensitive actions, change scope, or convert a proposal into maintainer approval.
 
-## Reserved CEO actions
+## Reserved maintainer actions
 
-Only the CEO may clone, fetch, pull, push, merge, commit, tag, release, delete branches, change remotes, change GitHub settings, approve secret access, accept unresolved security risk, activate Ruflo, or change authoritative governance.
+Only the maintainer may clone, fetch, pull, push, merge, commit, tag, release, delete branches, change remotes, change GitHub settings, approve secret access, accept unresolved security risk, activate Ruflo, or change authoritative governance.
 
 ## Delegation contract
 
