@@ -14,17 +14,35 @@ function isCurrentPath(currentPath: string, href: string) {
   return currentPath.startsWith(href);
 }
 
-export function SidebarNavigation({ currentPath, onOpenPalette, onNavigate }: SidebarNavigationProps) {
+export function SidebarNavigation({
+  currentPath,
+  onOpenPalette,
+  onNavigate,
+  open = false,
+  onClose,
+}: SidebarNavigationProps) {
   const { mode, plain, motion, togglePlain, toggleMotion } = useTheme();
 
   return (
-    <nav className="no-sidebar" aria-label="Primary navigation">
+    <nav
+      id="primary-nav"
+      className={`no-sidebar${open ? " is-open" : ""}`}
+      aria-label="Primary navigation"
+    >
       <div className="no-brand-block">
         <div className="no-brand-lockup">
           <span className="no-brand-mark" aria-hidden="true" />
           <span className="no-brand-name">{applicationMeta.brand}</span>
         </div>
         <div className="no-eyebrow no-brand-tagline">{applicationMeta.tagline}</div>
+        <button
+          type="button"
+          className="no-sidebar-close"
+          onClick={onClose}
+          aria-label="Close menu"
+        >
+          ✕
+        </button>
       </div>
 
       <div className="no-utility-block">
@@ -56,7 +74,10 @@ export function SidebarNavigation({ currentPath, onOpenPalette, onNavigate }: Si
                     href={item.href}
                     className={`no-nav-item${active ? " is-active" : ""}`}
                     aria-current={active ? "page" : undefined}
-                    onClick={() => onNavigate?.(item.href)}
+                    onClick={() => {
+                      onNavigate?.(item.href);
+                      onClose?.();
+                    }}
                   >
                     {active ? <span className="no-nav-active-bar" aria-hidden="true" /> : null}
                     <span>{item.label}</span>

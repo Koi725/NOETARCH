@@ -6,12 +6,128 @@
   color: var(--ink);
 }
 
-.no-shell-main { min-width: 0; }
+.no-shell-main {
+  min-width: 0;
+  max-width: 100%;
+}
 
 .no-application-shell button,
-.no-application-shell a { border-radius: 0; }
+.no-application-shell a {
+  border-radius: 0;
+}
 
+/* Mobile-only chrome: hidden on desktop. */
+.no-shell-topbar {
+  display: none;
+}
+.no-shell-scrim {
+  display: none;
+}
+.no-sidebar-close {
+  display: none;
+}
+
+/* ── Ultra-wide: cap content line-length so text stays readable ────────────── */
+@media (min-width: 1920px) {
+  .no-application-shell {
+    grid-template-columns: 260px minmax(0, 1fr);
+  }
+  .no-shell-main {
+    padding-inline: max(24px, calc((100% - 1680px) / 2));
+  }
+}
+
+/* ── Mobile / tablet: sidebar becomes an off-canvas drawer ─────────────────── */
 @media (max-width: 899px) {
-  .no-application-shell { display: block; width: 100%; max-width: 100vw; overflow-x: clip; }
-  .no-shell-main { width: 100%; max-width: 100vw; }
+  .no-application-shell {
+    display: block;
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: clip;
+  }
+
+  .no-shell-main {
+    width: 100%;
+    max-width: 100vw;
+  }
+
+  .no-shell-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 60;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: 52px;
+    padding: 0 12px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .no-shell-hamburger,
+  .no-shell-topbar-search {
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 1px solid var(--btnline);
+    color: var(--ink);
+    font: 600 15px/1 var(--font-body);
+    cursor: pointer;
+  }
+
+  .no-shell-topbar-brand {
+    flex: 1;
+    font: 800 16px/1 var(--font-heading);
+    letter-spacing: 0.02em;
+  }
+
+  /* The sidebar nav, as a slide-in drawer. */
+  .no-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 80;
+    height: 100dvh;
+    width: min(300px, 84vw);
+    max-width: 84vw;
+    transform: translateX(-100%);
+    transition: transform 200ms ease;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.4);
+  }
+
+  .no-sidebar.is-open {
+    transform: translateX(0);
+  }
+
+  .no-shell-scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+    background: color-mix(in srgb, var(--bg) 55%, transparent);
+  }
+
+  .no-sidebar-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    min-width: 40px;
+    min-height: 40px;
+    background: transparent;
+    border: 1px solid var(--btnline);
+    color: var(--ink);
+    cursor: pointer;
+  }
+
+  /* Touch targets ≥ 44px on mobile. */
+  .no-nav-item,
+  .no-utility-button {
+    min-height: 44px;
+  }
 }
