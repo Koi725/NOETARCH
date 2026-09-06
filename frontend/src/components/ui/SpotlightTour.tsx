@@ -145,11 +145,13 @@ export function SpotlightTour({ steps, onClose, reducedMotion = false }: Spotlig
 
   return (
     <div
-      className="no-tour-root"
+      className={`no-tour-root${highlightStyle ? " has-spotlight" : ""}`}
       data-reduced={reducedMotion ? "true" : "false"}
       role="presentation"
     >
-      {/* Dimming overlay + spotlight cutout (visual only; not aria-hidden). */}
+      {/* When a target is highlighted, the overlay is transparent and the spotlight's
+          box-shadow dims ONLY around the bright cutout (target stays full-brightness).
+          With no target, the overlay dims uniformly as a fallback. */}
       <div className="no-tour-overlay" aria-hidden="true" onClick={close}>
         {highlightStyle && <div className="no-tour-spotlight" style={highlightStyle} />}
       </div>
