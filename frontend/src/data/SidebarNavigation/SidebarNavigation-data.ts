@@ -13,26 +13,26 @@ export const navigationGroups: NavigationGroup[] = [
   {
     label: "Watch",
     items: [
-      { label: "Today", href: "/", available: true },
-      { label: "Live run", href: "/live-run", available: false },
-      { label: "Decisions", href: "/decisions", available: false },
-      { label: "Evidence", href: "/evidence", available: false },
+      { label: "Today", href: "/today", available: true },
+      { label: "Live run", href: "/live-run", available: true },
+      { label: "Decisions", href: "/decisions", available: true },
+      { label: "Evidence", href: "/evidence", available: true },
     ],
   },
   {
     label: "Work",
     items: [
-      { label: "Guided review", href: "/guided-review", available: false },
-      { label: "Recipes", href: "/recipes", available: false },
-      { label: "History & replay", href: "/history", available: false },
+      { label: "Guided review", href: "/guided-review", available: true },
+      { label: "Recipes", href: "/recipes", available: true },
+      { label: "History & replay", href: "/history", available: true },
     ],
   },
   {
     label: "System",
     items: [
-      { label: "Models & policy", href: "/models-policy", available: false },
-      { label: "First run", href: "/first-run", available: false },
-      { label: "Loading & empty states", href: "/states", available: false },
+      { label: "Models & policy", href: "/models-policy", available: true },
+      { label: "First run", href: "/first-run", available: true },
+      { label: "Loading & empty states", href: "/states", available: true },
     ],
   },
 ];
