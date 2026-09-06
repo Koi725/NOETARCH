@@ -1,12 +1,12 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useShell } from "@/components/ApplicationShell";
 import { useTheme } from "@/components/ThemeProvider";
-import { mockTodayService } from "@/services/TodayService";
+import { fetchTodayData } from "@/services/TodayService";
+import type { TodayData } from "@/contracts/today";
 import "@/tailwind/components/TodayOverview/TodayOverview.css";
-
-const todayData = mockTodayService.getTodayData();
 
 type ComingSoonActionProps = {
   children: React.ReactNode;
@@ -26,6 +26,42 @@ function ComingSoonAction({ children, className, label }: ComingSoonActionProps)
 export function TodayOverview() {
   const { plain } = useTheme();
   const { openPalette } = useShell();
+  const [todayData, setTodayData] = useState<TodayData | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchTodayData()
+      .then((data) => {
+        if (!cancelled) setTodayData(data);
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : "Failed to load today's workspace.");
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (error) {
+    return (
+      <div className="no-today-page">
+        <div role="alert" className="no-today-error">
+          <p>{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!todayData) {
+    return (
+      <div className="no-today-page" role="status" aria-label="Loading today's workspace">
+        <p className="no-today-loading">Loading your workspace…</p>
+      </div>
+    );
+  }
 
   return (
     <div className="no-today-page">
