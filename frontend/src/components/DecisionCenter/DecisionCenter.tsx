@@ -11,6 +11,7 @@ import type { AuditEntry } from "@/contracts/decision";
 import {
   useScreenTour,
   ExplainTip,
+  DecisionsSkeleton,
   DECISIONS_TOUR_KEY,
   DECISIONS_TOUR_STEPS,
 } from "@/components/ui";
@@ -230,9 +231,9 @@ export function DecisionCenter({ decisions: decisionsProp }: DecisionCenterProps
   if (!decisions) {
     return (
       <main className="no-decision-center" aria-label="Decision center">
-        <p className="no-decision-loading" role="status" aria-label="Loading decisions">
-          Loading decisions…
-        </p>
+        <div role="status" aria-label="Loading decisions">
+          <DecisionsSkeleton />
+        </div>
       </main>
     );
   }
@@ -292,7 +293,7 @@ function DecisionCenterView({ initialDecisions }: { initialDecisions: Decision[]
         <p className="no-page-subtitle">
           Review and approve agent actions before they run
         </p>
-        <p className="no-prototype-notice" role="note">
+        <p id="decisions-explain" className="no-prototype-notice" role="note">
           {realBackend
             ? "Connected · your choices are saved to your local database and recorded in an audit trail. No external effects."
             : "Prototype · simulated · no backend"}
