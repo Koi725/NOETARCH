@@ -11,7 +11,7 @@ import type {
   EvidenceFilter,
   EvidenceSource,
 } from "./EvidenceLibrary_types";
-import { useScreenTour, EVIDENCE_TOUR_KEY, EVIDENCE_TOUR_STEPS } from "@/components/ui";
+import { useScreenTour, EvidenceListSkeleton, EVIDENCE_TOUR_KEY, EVIDENCE_TOUR_STEPS } from "@/components/ui";
 import "@/tailwind/components/EvidenceLibrary/EvidenceLibrary.css";
 
 const FILTERS: { value: EvidenceFilter; label: string }[] = [
@@ -263,7 +263,7 @@ export function EvidenceLibrary() {
   if (loading) {
     return (
       <div className="no-ev-page" role="status" aria-label="Loading evidence records">
-        <p className="no-ev-loading">Loading evidence records…</p>
+        <EvidenceListSkeleton />
       </div>
     );
   }
@@ -292,7 +292,7 @@ export function EvidenceLibrary() {
           </div>
         </div>
 
-        <div className="no-ev-search-row">
+        <div id="evidence-search" className="no-ev-search-row">
           <label htmlFor={searchId} className="sr-only">
             Search records
           </label>
