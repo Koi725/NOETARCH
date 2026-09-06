@@ -1,13 +1,15 @@
 "use client";
 
 import { useId, useState } from "react";
-import { useTour } from "./TourProvider";
+import { Info } from "lucide-react";
 import "@/tailwind/components/Tooltip/Tooltip.css";
 
 /**
- * A small "explain this" affordance: a "?" button that reveals a tooltip on hover AND
+ * A small "explain this" affordance: a muted Info icon that reveals a tooltip on hover AND
  * focus, dismissible with Escape or by blurring. The tooltip has role="tooltip" and is
  * linked to the trigger via aria-describedby. Available anytime, not just first run.
+ *
+ * Icon convention: decorative glyph is aria-hidden; the interactive button carries the label.
  */
 export function ExplainTip({ label, text }: { label: string; text: string }) {
   const [open, setOpen] = useState(false);
@@ -29,7 +31,7 @@ export function ExplainTip({ label, text }: { label: string; text: string }) {
           if (e.key === "Escape") setOpen(false);
         }}
       >
-        <span aria-hidden="true">?</span>
+        <Info size={14} strokeWidth={2} aria-hidden="true" />
       </button>
       {open && (
         <span id={tipId} role="tooltip" className="no-tip-bubble">
@@ -37,25 +39,5 @@ export function ExplainTip({ label, text }: { label: string; text: string }) {
         </span>
       )}
     </span>
-  );
-}
-
-/**
- * The "Show me around" help button. Renders only when the current screen has registered a
- * tour; clicking re-runs that tour on demand.
- */
-export function TourHelpButton() {
-  const { hasCurrentTour, startCurrentTour } = useTour();
-  if (!hasCurrentTour) return null;
-  return (
-    <button
-      type="button"
-      className="no-tour-help-btn"
-      onClick={startCurrentTour}
-      aria-label="Show me around"
-    >
-      <span aria-hidden="true">?</span>
-      <span className="no-tour-help-btn__text">Show me around</span>
-    </button>
   );
 }
