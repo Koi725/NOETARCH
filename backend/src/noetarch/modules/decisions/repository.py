@@ -1,4 +1,8 @@
-"""Decisions repository — DB-backed (SQLAlchemy), maps ORM rows to Pydantic schemas."""
+"""Decisions repository — DB-backed (SQLAlchemy), maps ORM rows to Pydantic schemas.
+
+Exposes read mappings plus ORM access used by the write path. All queries use
+SQLAlchemy constructs (parameterized); no raw SQL.
+"""
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -16,14 +20,18 @@ class DecisionRepository:
             .scalars()
             .all()
         )
-        return [self._to_schema(r) for r in rows]
+        return [self.to_schema(r) for r in rows]
 
     def get_by_id(self, decision_id: str) -> Decision | None:
         row = self._session.get(DecisionORM, decision_id)
-        return self._to_schema(row) if row is not None else None
+        return self.to_schema(row) if row is not None else None
+
+    def get_orm(self, decision_id: str) -> DecisionORM | None:
+        """Return the mutable ORM row (write path only)."""
+        return self._session.get(DecisionORM, decision_id)
 
     @staticmethod
-    def _to_schema(row: DecisionORM) -> Decision:
+    def to_schema(row: DecisionORM) -> Decision:
         return Decision.model_validate(
             {
                 "id": row.id,
@@ -38,5 +46,8 @@ class DecisionRepository:
                 "alternatives": row.alternatives,
                 "status": row.status,
                 "rejectedAt": row.rejected_at,
+                "version": row.version,
+                "resolvedAt": row.resolved_at,
+                "resolutionAction": row.resolution_action,
             }
         )
