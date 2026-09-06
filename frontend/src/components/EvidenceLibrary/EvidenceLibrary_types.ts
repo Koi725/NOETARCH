@@ -20,6 +20,8 @@ export type EvidenceRecord = {
   totalSources: number;
   missingDoi?: boolean;
   conflictNote?: string;
+  source?: "seed" | "openalex" | "crossref";
+  retrievedAt?: string | null;
 };
 
 export type EvidenceFilter =

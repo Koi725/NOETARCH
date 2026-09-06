@@ -1,7 +1,11 @@
 "use client";
 
 import { useState, useEffect, useMemo, useId, useCallback } from "react";
-import { fetchEvidenceData } from "@/services/EvidenceService";
+import {
+  fetchEvidenceData,
+  searchEvidence,
+  type EvidenceSearchResult,
+} from "@/services/EvidenceService";
 import type {
   EvidenceRecord,
   EvidenceFilter,
@@ -126,6 +130,16 @@ function DetailInspector({
               </dd>
             </>
           )}
+          <dt>Origin</dt>
+          <dd>{record.source === "openalex" ? "Fetched from OpenAlex" : "Local dataset"}</dd>
+          {record.retrievedAt && (
+            <>
+              <dt>Retrieved</dt>
+              <dd>
+                <time dateTime={record.retrievedAt}>{record.retrievedAt}</time>
+              </dd>
+            </>
+          )}
         </dl>
 
         <section aria-labelledby="source-table-heading">
@@ -159,6 +173,37 @@ export function EvidenceLibrary() {
   const [filter, setFilter] = useState<EvidenceFilter>("all");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const searchId = useId();
+  const extSearchId = useId();
+  const [extQuery, setExtQuery] = useState("");
+  const [searching, setSearching] = useState(false);
+  const [searchStatus, setSearchStatus] = useState<EvidenceSearchResult | null>(null);
+  const [searchError, setSearchError] = useState<string | null>(null);
+
+  const handleExternalSearch = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      const q = extQuery.trim();
+      if (!q) return;
+      setSearching(true);
+      setSearchError(null);
+      try {
+        const result = await searchEvidence(q);
+        setSearchStatus(result);
+        if (result.records.length > 0) {
+          setRecords((prev) => {
+            const existing = new Set(prev.map((r) => r.id));
+            const additions = result.records.filter((r) => !existing.has(r.id));
+            return [...additions, ...prev];
+          });
+        }
+      } catch (err: unknown) {
+        setSearchError(err instanceof Error ? err.message : "External search failed.");
+      } finally {
+        setSearching(false);
+      }
+    },
+    [extQuery]
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -259,6 +304,48 @@ export function EvidenceLibrary() {
             aria-label="Search evidence records"
           />
         </div>
+
+        {/* External source fetch (OpenAlex) — off in mock mode / when the flag is disabled */}
+        <form
+          className="no-ev-external-search"
+          onSubmit={handleExternalSearch}
+          aria-label="Search external sources"
+        >
+          <label htmlFor={extSearchId} className="sr-only">
+            Search external sources (OpenAlex)
+          </label>
+          <input
+            id={extSearchId}
+            type="search"
+            className="no-ev-ext-input"
+            placeholder="Fetch new papers from OpenAlex…"
+            value={extQuery}
+            onChange={(e) => setExtQuery(e.target.value)}
+            disabled={searching}
+            aria-label="Search external sources"
+          />
+          <button
+            type="submit"
+            className="no-secondary-button"
+            disabled={searching || extQuery.trim() === ""}
+          >
+            {searching ? "Fetching…" : "Fetch from OpenAlex"}
+          </button>
+        </form>
+        {searchError && (
+          <p className="no-ev-search-error" role="alert">
+            {searchError}
+          </p>
+        )}
+        {searchStatus && !searchError && (
+          <p className="no-ev-search-status" role="status" aria-live="polite">
+            {searchStatus.enabled
+              ? `Fetched ${searchStatus.records.length} · froze ${searchStatus.frozen} · deduped ${searchStatus.deduplicated}${
+                  searchStatus.retrievedAt ? ` · retrieved ${searchStatus.retrievedAt}` : ""
+                }`
+              : searchStatus.message}
+          </p>
+        )}
 
         <div className="no-ev-filter-chips" role="group" aria-label="Filter records">
           {FILTERS.map((f) => (
