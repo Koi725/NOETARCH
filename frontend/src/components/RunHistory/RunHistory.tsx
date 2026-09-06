@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useId } from "react";
+import { Play, Check, Square, X, CircleDot } from "lucide-react";
 import { fetchRuns } from "@/services/HistoryService";
 import type {
   Run,
@@ -11,13 +12,14 @@ import type {
 import { useScreenTour, HistorySkeleton, HISTORY_TOUR_KEY, HISTORY_TOUR_STEPS } from "@/components/ui";
 import "@/tailwind/components/RunHistory/RunHistory.css";
 
-const STATUS_ICON: Record<RunStatus, string> = {
-  running: "▶",
-  complete: "✓",
-  interrupted: "■",
-  failed: "✕",
-  partial: "◑",
-};
+function RunStatusGlyph({ status }: { status: RunStatus }) {
+  const props = { size: 15, strokeWidth: 2, "aria-hidden": true } as const;
+  if (status === "running") return <Play {...props} />;
+  if (status === "complete") return <Check {...props} />;
+  if (status === "interrupted") return <Square {...props} />;
+  if (status === "failed") return <X {...props} />;
+  return <CircleDot {...props} />;
+}
 
 const STATUS_LABEL: Record<RunStatus, string> = {
   running: "Running",
@@ -141,7 +143,7 @@ function RunRow({
           aria-label={STATUS_LABEL[run.status]}
           role="img"
         >
-          {STATUS_ICON[run.status]}
+          <RunStatusGlyph status={run.status} />
         </span>
 
         <div className="no-run-row__info">
