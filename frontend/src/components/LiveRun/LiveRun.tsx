@@ -1,18 +1,8 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { mockRunService } from "@/services/RunService";
+import { useState, useEffect, useCallback } from "react";
+import { fetchLiveRunData, type LiveRunData } from "@/services/RunService";
 import type { LiveRunLayout, StepState } from "./LiveRun_types";
-
-const {
-  meta: liveRunMeta,
-  steps: liveRunSteps,
-  stepInspector: currentStepInspector,
-  kpis: liveRunKPIs,
-  events: liveRunEvents,
-  decisions: liveRunDecisions,
-  evidenceCards: liveRunEvidenceCards,
-} = mockRunService.getLiveRunData();
 import "@/tailwind/components/LiveRun/LiveRun.css";
 
 function stepStateLabel(state: StepState, isPaused: boolean): string {
@@ -20,10 +10,18 @@ function stepStateLabel(state: StepState, isPaused: boolean): string {
   return state;
 }
 
-function StepRail({ activeIndex, isPaused }: { activeIndex: number; isPaused: boolean }) {
+function StepRail({
+  steps,
+  activeIndex,
+  isPaused,
+}: {
+  steps: LiveRunData["steps"];
+  activeIndex: number;
+  isPaused: boolean;
+}) {
   return (
     <ol className="no-live-run-rail" aria-label="Workflow steps">
-      {liveRunSteps.map((step) => {
+      {steps.map((step) => {
         const displayState = stepStateLabel(step.state, isPaused);
         const isCurrent = step.index === activeIndex;
         return (
@@ -57,8 +55,14 @@ function StepRail({ activeIndex, isPaused }: { activeIndex: number; isPaused: bo
   );
 }
 
-function StepInspector({ isPaused }: { isPaused: boolean }) {
-  const s = currentStepInspector;
+function StepInspector({
+  inspector,
+  isPaused,
+}: {
+  inspector: LiveRunData["stepInspector"];
+  isPaused: boolean;
+}) {
+  const s = inspector;
   return (
     <section className="no-live-inspector" aria-labelledby="inspector-heading">
       <div className="no-inspector-heading-row">
@@ -91,10 +95,10 @@ function StepInspector({ isPaused }: { isPaused: boolean }) {
   );
 }
 
-function KPIRow() {
+function KPIRow({ kpis }: { kpis: LiveRunData["kpis"] }) {
   return (
     <div className="no-live-kpi-row" role="region" aria-label="Run metrics">
-      {liveRunKPIs.map((kpi) => (
+      {kpis.map((kpi) => (
         <div className="no-live-kpi" key={kpi.label}>
           <div className="no-live-kpi-label">{kpi.label}</div>
           <div
@@ -109,7 +113,7 @@ function KPIRow() {
   );
 }
 
-function EventLedger() {
+function EventLedger({ events }: { events: LiveRunData["events"] }) {
   return (
     <section className="no-live-ledger" aria-labelledby="ledger-heading">
       <h2 id="ledger-heading" className="no-ledger-heading">
@@ -117,7 +121,7 @@ function EventLedger() {
         <span className="no-ledger-note">Model notes are clearly labeled and separated from verified system facts.</span>
       </h2>
       <ol className="no-ledger-list" aria-label="Events, newest first">
-        {liveRunEvents.map((evt) => (
+        {events.map((evt) => (
           <li
             key={evt.id}
             className={`no-ledger-row is-${evt.kind}`}
@@ -140,13 +144,13 @@ function EventLedger() {
   );
 }
 
-function DecisionInspector() {
+function DecisionInspector({ decisions }: { decisions: LiveRunData["decisions"] }) {
   return (
     <section className="no-live-decisions" aria-labelledby="decisions-heading">
       <h2 id="decisions-heading" className="no-decisions-heading">
         Pending decisions
       </h2>
-      {liveRunDecisions.map((dec) => (
+      {decisions.map((dec) => (
         <div key={dec.id} className="no-decision-card">
           <span className="no-decision-badge">Pending</span>
           <p className="no-decision-desc">{dec.description}</p>
@@ -156,14 +160,14 @@ function DecisionInspector() {
   );
 }
 
-function EvidenceCards() {
+function EvidenceCards({ cards }: { cards: LiveRunData["evidenceCards"] }) {
   return (
     <section className="no-live-evidence" aria-labelledby="evidence-heading">
       <h2 id="evidence-heading" className="no-evidence-heading">
         Evidence cards
       </h2>
       <div className="no-evidence-card-list">
-        {liveRunEvidenceCards.map((card) => (
+        {cards.map((card) => (
           <article key={card.id} className="no-evidence-card">
             <p className="no-evidence-title">{card.title}</p>
             <dl className="no-evidence-meta">
@@ -194,12 +198,30 @@ function SimNotice({ label }: SimNoticeProps) {
 }
 
 export function LiveRun() {
+  const [data, setData] = useState<LiveRunData | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [isPaused, setIsPaused] = useState(false);
   const [isStopped, setIsStopped] = useState(false);
   const [retryActive, setRetryActive] = useState(false);
   const [skipActive, setSkipActive] = useState(false);
   const [layout, setLayout] = useState<LiveRunLayout>("split");
   const [lastSim, setLastSim] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchLiveRunData()
+      .then((d) => {
+        if (!cancelled) setData(d);
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : "Failed to load the active run.");
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const showSim = useCallback((label: string) => {
     setLastSim(label);
@@ -244,15 +266,35 @@ export function LiveRun() {
       ? "Layout: wide left"
       : "Layout: wide right";
 
+  if (error) {
+    return (
+      <div className="no-live-page">
+        <div role="alert" className="no-live-error">
+          <p>{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className="no-live-page" role="status" aria-label="Loading the active run">
+        <p className="no-live-loading">Loading the active run…</p>
+      </div>
+    );
+  }
+
+  const { meta, steps, stepInspector, kpis, events, decisions, evidenceCards } = data;
+
   return (
     <div className={`no-live-page is-layout-${layout}`}>
       {/* Top bar */}
       <div className="no-live-topbar">
         <div className="no-live-topbar-left">
           <span className="no-eyebrow no-live-eyebrow">
-            Run {liveRunMeta.runId} · {liveRunMeta.started} · {liveRunMeta.elapsed} elapsed
+            Run {meta.runId} · {meta.started} · {meta.elapsed} elapsed
           </span>
-          <h1 className="no-live-title">{liveRunMeta.title}</h1>
+          <h1 className="no-live-title">{meta.title}</h1>
         </div>
         <div className="no-live-topbar-right">
           <div className="no-live-controls" role="toolbar" aria-label="Run controls">
@@ -327,16 +369,16 @@ export function LiveRun() {
       <div className="no-live-body">
         {/* Left column */}
         <div className="no-live-left">
-          <KPIRow />
-          <StepRail activeIndex={currentStepInspector.stepIndex} isPaused={isPaused} />
-          <StepInspector isPaused={isPaused} />
-          <DecisionInspector />
-          <EvidenceCards />
+          <KPIRow kpis={kpis} />
+          <StepRail steps={steps} activeIndex={stepInspector.stepIndex} isPaused={isPaused} />
+          <StepInspector inspector={stepInspector} isPaused={isPaused} />
+          <DecisionInspector decisions={decisions} />
+          <EvidenceCards cards={evidenceCards} />
         </div>
 
         {/* Right column */}
         <div className="no-live-right">
-          <EventLedger />
+          <EventLedger events={events} />
         </div>
       </div>
     </div>
