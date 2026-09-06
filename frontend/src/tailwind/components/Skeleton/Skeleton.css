@@ -1,0 +1,203 @@
+/* Skeleton screens. The muted block is always visible; the shimmer is an animation, so it
+   is automatically removed when motion is OFF / prefers-reduced-motion (global gate in
+   motion.css) — leaving a static skeleton. */
+
+.no-skel {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--no-color-text, #e7ecf3) 10%, transparent);
+}
+
+.no-skel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--no-color-text, #e7ecf3) 12%, transparent),
+    transparent
+  );
+  animation: noSkelShimmer 1.25s ease-in-out infinite;
+}
+
+@keyframes noSkelShimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.no-skel-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.no-skel-row-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.no-skel-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.no-skel-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.no-skel-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.no-skel-grow {
+  flex: 1;
+}
+
+.no-skel-card {
+  background: color-mix(in srgb, var(--no-color-text, #e7ecf3) 7%, transparent);
+  border-radius: 12px;
+  min-height: 92px;
+}
+
+.no-skel-card--tall {
+  min-height: 160px;
+}
+
+.no-skel-card--kpi {
+  min-height: 64px;
+}
+
+.no-skel-card--provider {
+  min-height: 150px;
+}
+
+.no-skel-card--decision {
+  min-height: 130px;
+}
+
+.no-skel-card--recipe {
+  min-height: 120px;
+}
+
+/* Evidence */
+.no-skel-ev-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--no-color-border, #2a3040);
+  border-radius: 10px;
+}
+
+.no-skel-row-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.no-skel-dots {
+  display: flex;
+  gap: 4px;
+}
+
+/* Today */
+.no-skel-today-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+}
+
+.no-skel-col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.no-skel-two {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* Live run */
+.no-skel-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.no-skel-liverun-body {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 16px;
+}
+
+.no-skel-rail {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.no-skel-rail-step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* History */
+.no-skel-history-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--no-color-border, #2a3040);
+  border-radius: 10px;
+}
+
+/* Policy */
+.no-skel-provider-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
+}
+
+/* Recipes */
+.no-skel-recipe-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+}
+
+/* Guided review */
+.no-skel-gr-body {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 820px) {
+  .no-skel-today-grid,
+  .no-skel-liverun-body,
+  .no-skel-gr-body {
+    grid-template-columns: 1fr;
+  }
+  .no-skel-kpis {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
