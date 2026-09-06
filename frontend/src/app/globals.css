@@ -2,6 +2,7 @@
 @import "../tailwind/tokens.css";
 @import "../tailwind/motion.css";
 @import "../tailwind/components.css";
+@import "../tailwind/components/Motion/Motion.css";
 
 * {
   box-sizing: border-box;
