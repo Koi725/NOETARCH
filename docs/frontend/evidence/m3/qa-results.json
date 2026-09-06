@@ -1,0 +1,113 @@
+{
+  "milestone": "M3",
+  "date": "2026-09-06",
+  "reviewer": "Claude Senior Co-CTO",
+  "method": "static-analysis-and-build",
+  "note": "M3 QA is conducted via static analysis (TypeScript, ESLint), unit tests, and production build verification. Chromium rendered-QA screenshots require a running dev server; that check is deferred to the CEO's own review session to avoid leaving background processes.",
+
+  "qualityGates": {
+    "lint": { "result": "pass", "errors": 0, "warnings": 0, "command": "npm run lint" },
+    "typeCheck": { "result": "pass", "errors": 0, "command": "npm run type-check" },
+    "tests": { "result": "pass", "testFiles": 7, "tests": 37, "command": "npm run test" },
+    "build": { "result": "pass", "routes": 11, "command": "npm run build" },
+    "diffCheck": { "result": "pass", "command": "git diff --check" },
+    "depTree": { "result": "pass", "note": "One unmet optional dependency (yaml@^2.4.2) is pre-existing and not required. No new dependencies added.", "command": "npm ls --all" }
+  },
+
+  "routes": [
+    { "path": "/", "type": "redirect", "destination": "/today", "status": "pass" },
+    { "path": "/today", "status": "pass", "note": "Canonical Today — M2 design preserved, actions converted to M3 navigation links" },
+    { "path": "/live-run", "status": "pass" },
+    { "path": "/decisions", "status": "pass" },
+    { "path": "/evidence", "status": "pass" },
+    { "path": "/guided-review", "status": "pass" },
+    { "path": "/recipes", "status": "pass" },
+    { "path": "/history", "status": "pass" },
+    { "path": "/models-policy", "status": "pass" },
+    { "path": "/first-run", "status": "pass" },
+    { "path": "/states", "status": "pass" }
+  ],
+
+  "accessibilityChecks": {
+    "semanticLandmarks": "verified in tests (main, navigation, dialog)",
+    "ariaCurrent": "verified in routes.test.tsx for all 10 routes",
+    "ariaPressed": "used on all toggle controls in LiveRun, DecisionCenter, ModelsPolicy, GuidedReview",
+    "ariaExpanded": "used on expandable recipe cards",
+    "ariaLive": "used in EvidenceLibrary, DecisionCenter, GuidedReview, RecipeLibrary, RunHistory, FirstRun",
+    "ariaDisabled": "used for evidence export links (mock-only)",
+    "keyboardHandlers": "GuidedReview: I/E/U/H/Z keys; CommandPalette: Tab loop, Escape; ApplicationShell: Ctrl/Cmd+K",
+    "focusRing": "2px accent outline, 2px offset — from global CSS",
+    "mobileTouchTargets": "48px enforced in all new CSS files at max-width 480px",
+    "noPreselectedRiskyConsent": "FirstRun step 6 (data-egress): egressDefault=null, validation blocks advance without selection; DecisionCenter: no action preselected",
+    "motionControls": "prefers-reduced-motion and data-anim=off — global, inherited by all new components",
+    "mockDisclosure": "Prototype · Mock data or Simulated · no backend notice on every new screen"
+  },
+
+  "responsiveChecks": {
+    "1440px": "three-pane layouts where applicable",
+    "1120px": "wide supporting rails and tables",
+    "900px": "stacked layouts, single-column views",
+    "820px": "tablet — tested via media queries",
+    "480px": "mobile decision targets enforced at 48px",
+    "noHorizontalOverflow": "overflow-x: clip on application shell body"
+  },
+
+  "interactionInventory": {
+    "LiveRun": ["pause toggle (aria-pressed)", "stop toggle", "retry toggle", "skip toggle", "layout toggle", "simulated notice on all actions"],
+    "DecisionCenter": ["approve-once per card", "use-local-alternative", "reject", "change-mind", "no preselected action"],
+    "EvidenceLibrary": ["search input (local state)", "filter chips (aria-pressed)", "record selection (detail inspector)", "provenance trail"],
+    "GuidedReview": ["include/exclude/uncertain/needs-human-review buttons", "reason checkboxes", "confirm/advance", "undo (3-deep)", "I/E/U/H/Z keyboard shortcuts"],
+    "RecipeLibrary": ["expand/collapse recipe cards (aria-expanded)", "duplicate recipe (aria-live toast)", "customize name inline"],
+    "RunHistory": ["filter tabs (aria-selected)", "run selection (compare up to 2)", "comparison diff panel", "replay with confirmation (aria-live)"],
+    "ModelsPolicy": ["enable/disable toggle per provider", "cost limit input with saved notice", "routing preference group (aria-pressed)", "approval toggle"],
+    "FirstRun": ["step navigation prev/next", "7-step wizard", "step 6 validation (egress must be chosen)", "review summary", "finish (simulated)"],
+    "StateGallery": ["static display of 15 production states using real ProgressBar and StatusIndicator components"]
+  },
+
+  "mockDataBoundary": {
+    "networks": "zero fetch/axios/XHR/WebSocket/EventSource calls",
+    "externalURLs": "none — all data is typed local constants",
+    "coverage": ["successful and failed sources", "free/local and paid/cloud operations", "pending and rejected decisions", "conflicting evidence", "missing DOI", "long titles (200+ chars in StateGallery)", "zero and large result counts", "retries", "partial workflow completion", "unavailable providers", "budget limits", "model commentary versus verified system facts"]
+  },
+
+  "changedFiles": {
+    "modified": [
+      "frontend/src/app/page.tsx",
+      "frontend/src/components/ApplicationShell/ApplicationShell.tsx",
+      "frontend/src/components/ApplicationShell/index.ts",
+      "frontend/src/components/SidebarNavigation/SidebarNavigation.tsx",
+      "frontend/src/components/TodayOverview/TodayOverview.tsx",
+      "frontend/src/components/TodayOverview/TodayOverview_types.ts",
+      "frontend/src/data/CommandPalette/CommandPalette-data.ts",
+      "frontend/src/data/SidebarNavigation/SidebarNavigation-data.ts",
+      "frontend/src/tailwind/components.css",
+      "frontend/src/tests/application-shell.test.tsx",
+      "frontend/src/tests/command-palette.test.tsx",
+      "frontend/src/tests/sidebar-navigation.test.tsx",
+      "frontend/src/tests/today-overview.test.tsx"
+    ],
+    "newComponents": [
+      "DecisionCenter", "EvidenceLibrary", "FirstRun", "GuidedReview",
+      "LiveRun", "ModelsPolicy", "RecipeLibrary", "RunHistory", "StateGallery"
+    ],
+    "newRoutes": [
+      "src/app/(shell)/layout.tsx",
+      "src/app/(shell)/today/page.tsx",
+      "src/app/(shell)/live-run/page.tsx",
+      "src/app/(shell)/decisions/page.tsx",
+      "src/app/(shell)/evidence/page.tsx",
+      "src/app/(shell)/guided-review/page.tsx",
+      "src/app/(shell)/recipes/page.tsx",
+      "src/app/(shell)/history/page.tsx",
+      "src/app/(shell)/models-policy/page.tsx",
+      "src/app/(shell)/first-run/page.tsx",
+      "src/app/(shell)/states/page.tsx"
+    ],
+    "newTests": [
+      "src/tests/routes.test.tsx"
+    ]
+  },
+
+  "backendBoundary": "No backend files accessed or modified. No API calls. No real credentials. No deployment. No Git mutations.",
+  "rufloConfiguration": "Unchanged. No Ruflo tool invoked. coordination/STATUS.md Ruflo status not affected."
+}
