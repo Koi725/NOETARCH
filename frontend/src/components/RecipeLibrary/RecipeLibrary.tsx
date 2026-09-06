@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useId } from "react";
-import { mockRecipeService } from "@/services/RecipeService";
+import { useState, useEffect, useId } from "react";
+import { fetchRecipes } from "@/services/RecipeService";
 import type {
   Recipe,
   CustomRecipe,
@@ -170,8 +170,52 @@ function RecipeCard({
   );
 }
 
-export function RecipeLibrary({ recipes }: RecipeLibraryProps) {
-  const effectiveRecipes = recipes ?? mockRecipeService.getRecipes();
+export function RecipeLibrary({ recipes: recipesProp }: RecipeLibraryProps) {
+  const [recipes, setRecipes] = useState<Recipe[] | null>(recipesProp ?? null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (recipesProp) return;
+    let cancelled = false;
+    fetchRecipes()
+      .then((data) => {
+        if (!cancelled) setRecipes(data);
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : "Failed to load recipes.");
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [recipesProp]);
+
+  if (error) {
+    return (
+      <main className="no-recipe-library" aria-label="Recipe library">
+        <div role="alert" className="no-recipe-error">
+          <p>{error}</p>
+        </div>
+      </main>
+    );
+  }
+
+  if (!recipes) {
+    return (
+      <main className="no-recipe-library" aria-label="Recipe library">
+        <p className="no-recipe-loading" role="status" aria-label="Loading recipes">
+          Loading recipes…
+        </p>
+      </main>
+    );
+  }
+
+  return <RecipeLibraryView recipes={recipes} />;
+}
+
+function RecipeLibraryView({ recipes }: { recipes: Recipe[] }) {
+  const effectiveRecipes = recipes;
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [customRecipes, setCustomRecipes] = useState<CustomRecipe[]>([]);
   const [toastId, setToastId] = useState<string | null>(null);
