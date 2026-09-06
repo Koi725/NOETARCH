@@ -18,6 +18,7 @@ const {
   egressDefault,
   egressNote,
 } = mockFirstRunService.getOnboardingConfig();
+import { useScreenTour, FIRST_RUN_TOUR_KEY, FIRST_RUN_TOUR_STEPS } from "@/components/ui";
 import "@/tailwind/components/FirstRun/FirstRun.css";
 
 const INITIAL_STATE: FirstRunFormState = {
@@ -370,6 +371,7 @@ function StepReview({
 }
 
 export function FirstRun() {
+  useScreenTour(FIRST_RUN_TOUR_KEY, FIRST_RUN_TOUR_STEPS);
   const [currentStep, setCurrentStep] = useState<StepNumber>(1);
   const [formState, setFormState] = useState<FirstRunFormState>(INITIAL_STATE);
   const [egressError, setEgressError] = useState(false);
@@ -441,7 +443,7 @@ export function FirstRun() {
         </div>
       )}
 
-      <div className="no-first-run-shell">
+      <div id="first-run-steps" className="no-first-run-shell">
         {/* Step indicator */}
         <nav
           className="no-first-run-steps-nav"
