@@ -8,6 +8,7 @@ import type {
   FilterTab,
   RunStatus,
 } from "./RunHistory_types";
+import { useScreenTour, HistorySkeleton, HISTORY_TOUR_KEY, HISTORY_TOUR_STEPS } from "@/components/ui";
 import "@/tailwind/components/RunHistory/RunHistory.css";
 
 const STATUS_ICON: Record<RunStatus, string> = {
@@ -228,6 +229,7 @@ function RunRow({
 }
 
 export function RunHistory({ runs: runsProp }: RunHistoryProps) {
+  useScreenTour(HISTORY_TOUR_KEY, HISTORY_TOUR_STEPS);
   const [runs, setRuns] = useState<Run[] | null>(runsProp ?? null);
   const [error, setError] = useState<string | null>(null);
 
@@ -261,9 +263,9 @@ export function RunHistory({ runs: runsProp }: RunHistoryProps) {
   if (!runs) {
     return (
       <main className="no-run-history" aria-label="Run history">
-        <p className="no-run-loading" role="status" aria-label="Loading run history">
-          Loading run history…
-        </p>
+        <div role="status" aria-label="Loading run history">
+          <HistorySkeleton />
+        </div>
       </main>
     );
   }
@@ -305,6 +307,7 @@ function RunHistoryView({ runs }: { runs: Run[] }) {
       </header>
 
       <div
+        id="history-filters"
         className="no-run-filter-tabs"
         role="tablist"
         aria-label="Filter runs by status"
@@ -334,7 +337,7 @@ function RunHistoryView({ runs }: { runs: Run[] }) {
         </p>
       )}
 
-      <ul className="no-run-list" role="list" aria-label="Run list">
+      <ul id="history-list" className="no-run-list" role="list" aria-label="Run list">
         {filtered.map((run) => (
           <RunRow
             key={run.id}
