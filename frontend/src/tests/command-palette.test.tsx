@@ -31,7 +31,8 @@ describe("command palette", () => {
   test("focuses the first intention and closes on Escape", () => {
     const { onClose } = renderPalette();
     const dialog = screen.getByRole("dialog", { name: "Type what you want to do" });
-    const firstItem = screen.getByRole("button", { name: /Switch to Daylight \(light\)/ });
+    // In M3, all items are available — the first item is "Decide the two things waiting for me"
+    const firstItem = screen.getByRole("button", { name: /Decide the two things waiting for me/ });
 
     expect(document.activeElement).toBe(firstItem);
     fireEvent.keyDown(dialog, { key: "Escape" });
@@ -50,15 +51,20 @@ describe("command palette", () => {
     expect(onNavigate).not.toHaveBeenCalled();
   });
 
-  test("future intentions are disabled and do not navigate", () => {
-    const { onClose, onNavigate } = renderPalette();
-    const futureIntention = screen.getByRole("button", { name: /Watch the run that's going now/ });
-    fireEvent.click(futureIntention);
+  test("navigation intentions invoke onNavigate with the correct href", () => {
+    const { onNavigate } = renderPalette();
+    const decisionsItem = screen.getByRole("button", { name: /Decide the two things waiting for me/ });
 
-    expect(futureIntention).toBeDisabled();
-    expect(futureIntention).toHaveTextContent("Coming soon");
-    expect(onNavigate).not.toHaveBeenCalled();
-    expect(onClose).not.toHaveBeenCalled();
+    expect(decisionsItem).not.toBeDisabled();
+    fireEvent.click(decisionsItem);
+    expect(onNavigate).toHaveBeenCalledWith("/decisions");
+  });
+
+  test("all M3 palette items are enabled", () => {
+    renderPalette();
+    const palette = screen.getByRole("dialog");
+    const disabledButtons = palette.querySelectorAll("button:disabled");
+    expect(disabledButtons).toHaveLength(0);
   });
 
   test("restores focus to the invoking control after close", () => {
@@ -67,7 +73,8 @@ describe("command palette", () => {
 
     invoker.focus();
     fireEvent.click(invoker);
-    expect(document.activeElement).toBe(screen.getByRole("button", { name: /Switch to Daylight \(light\)/ }));
+    // First enabled item in M3 is "Decide the two things waiting for me"
+    expect(document.activeElement).toBe(screen.getByRole("button", { name: /Decide the two things waiting for me/ }));
     fireEvent.click(screen.getByRole("button", { name: "Close command palette" }));
 
     expect(document.activeElement).toBe(invoker);

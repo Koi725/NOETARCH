@@ -8,7 +8,7 @@ describe("sidebar navigation semantics", () => {
     window.localStorage.clear();
   });
 
-  test("uses a named navigation landmark and exposes future routes as unavailable", () => {
+  test("uses a named navigation landmark and marks the active route correctly", () => {
     render(
       <ThemeProvider>
         <SidebarNavigation currentPath="/decisions" onOpenPalette={vi.fn()} />
@@ -16,11 +16,32 @@ describe("sidebar navigation semantics", () => {
     );
 
     expect(screen.getByRole("navigation", { name: "Primary navigation" })).toBeInTheDocument();
-    const decisions = screen.getByText("Decisions").closest(".no-nav-item");
-    expect(decisions).toHaveAttribute("aria-disabled", "true");
-    expect(decisions).toHaveTextContent("Coming soon");
-    expect(screen.queryByRole("link", { name: /Decisions/ })).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Decisions" })).toHaveAttribute("aria-current", "page");
     expect(screen.getByRole("link", { name: "Today" })).not.toHaveAttribute("aria-current");
+  });
+
+  test("all ten M3 destinations render as active links", () => {
+    render(
+      <ThemeProvider>
+        <SidebarNavigation currentPath="/today" onOpenPalette={vi.fn()} />
+      </ThemeProvider>,
+    );
+
+    const expectedLinks = [
+      "Today",
+      "Live run",
+      "Decisions",
+      "Evidence",
+      "Guided review",
+      "Recipes",
+      "History & replay",
+      "Models & policy",
+      "First run",
+      "Loading & empty states",
+    ];
+    for (const label of expectedLinks) {
+      expect(screen.getByRole("link", { name: label }), `"${label}" should be a link`).toBeInTheDocument();
+    }
   });
 
   test("provides a reachable motion preference control", () => {

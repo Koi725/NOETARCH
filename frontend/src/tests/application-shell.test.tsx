@@ -37,7 +37,8 @@ describe("application shell keyboard and landmark contracts", () => {
     },
   );
 
-  test("provides the shell main landmark and current navigation state", () => {
+  test("provides the shell main landmark and correct Today active state", () => {
+    pathname.value = "/";
     render(
       <ThemeProvider>
         <ApplicationShell>
@@ -48,6 +49,23 @@ describe("application shell keyboard and landmark contracts", () => {
 
     expect(screen.getByRole("main")).toContainElement(screen.getByRole("heading", { name: "Shell content" }));
     expect(screen.getByRole("link", { name: "Today" })).toHaveAttribute("aria-current", "page");
-    expect(screen.queryByRole("link", { name: /Decisions/ })).not.toBeInTheDocument();
+    // In M3 all routes are real links
+    expect(screen.getByRole("link", { name: "Decisions" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Live run" })).toBeInTheDocument();
+  });
+
+  test("all M3 palette items are enabled", () => {
+    render(
+      <ThemeProvider>
+        <ApplicationShell>
+          <div />
+        </ApplicationShell>
+      </ThemeProvider>,
+    );
+
+    fireEvent.keyDown(window, { key: "k", ctrlKey: true });
+    const palette = screen.getByRole("dialog");
+    const disabledInPalette = palette.querySelectorAll("button:disabled");
+    expect(disabledInPalette).toHaveLength(0);
   });
 });
