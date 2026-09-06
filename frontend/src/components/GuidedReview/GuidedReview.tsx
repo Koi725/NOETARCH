@@ -7,6 +7,7 @@ import type {
   HistoryEntry,
   ReviewPaper,
 } from "./GuidedReview_types";
+import { useScreenTour, GuidedReviewSkeleton, GUIDED_REVIEW_TOUR_KEY, GUIDED_REVIEW_TOUR_STEPS } from "@/components/ui";
 import "@/tailwind/components/GuidedReview/GuidedReview.css";
 
 function decisionLabel(d: Exclude<Decision, null>): string {
@@ -34,6 +35,7 @@ type ReviewState = {
 };
 
 export function GuidedReview() {
+  useScreenTour(GUIDED_REVIEW_TOUR_KEY, GUIDED_REVIEW_TOUR_STEPS);
   const [data, setData] = useState<GuidedReviewData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -66,7 +68,7 @@ export function GuidedReview() {
   if (!data) {
     return (
       <div className="no-gr-page" role="status" aria-label="Loading the review">
-        <p className="no-gr-loading">Loading the review…</p>
+        <GuidedReviewSkeleton />
       </div>
     );
   }
@@ -202,7 +204,7 @@ function GuidedReviewView({ data }: { data: GuidedReviewData }) {
       </div>
 
       {/* Progress bar */}
-      <div className="no-gr-progress-band" role="region" aria-label="Review progress">
+      <div id="gr-progress" className="no-gr-progress-band" role="region" aria-label="Review progress">
         <div
           className="no-gr-progress-track"
           role="progressbar"
@@ -238,7 +240,7 @@ function GuidedReviewView({ data }: { data: GuidedReviewData }) {
       {/* Body */}
       <div className="no-gr-body">
         {/* Left: paper details */}
-        <div className="no-gr-paper-col">
+        <div id="gr-paper" className="no-gr-paper-col">
           <div className="no-gr-paper-index" aria-label={`Paper ${paper.index} of ${reviewProgress.total}`}>
             Paper {paper.index} of {reviewProgress.total}
           </div>
@@ -265,7 +267,7 @@ function GuidedReviewView({ data }: { data: GuidedReviewData }) {
 
         {/* Right: decision panel */}
         <div className="no-gr-decision-col">
-          <div className="no-gr-decision-panel">
+          <div id="gr-decision" className="no-gr-decision-panel">
             <div className="no-gr-decision-heading">Your decision</div>
 
             <div className="no-gr-decision-buttons" role="group" aria-label="Decision options">
@@ -336,7 +338,7 @@ function GuidedReviewView({ data }: { data: GuidedReviewData }) {
           </div>
 
           {/* Undo + History */}
-          <div className="no-gr-history-panel">
+          <div id="gr-history" className="no-gr-history-panel">
             <div className="no-gr-history-heading">
               Recent decisions
               <button
