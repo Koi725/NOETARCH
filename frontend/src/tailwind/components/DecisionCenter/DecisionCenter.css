@@ -1,0 +1,77 @@
+/* DecisionCenter layout */
+.no-decision-center { min-width: 0; }
+
+/* Page header (shared pattern) */
+.no-page-header { padding: 22px 32px 18px; border-bottom: 2px solid var(--line); animation: noFall .5s cubic-bezier(.2,.8,.2,1) both; }
+.no-page-title { margin: 0; color: var(--ink); font: 800 clamp(18px, 2.4vw, 26px)/1.05 var(--font-heading); letter-spacing: -.025em; }
+.no-page-subtitle { margin: 8px 0 0; color: var(--ink2); font: 400 13.5px/1.45 var(--font-body); }
+.no-prototype-notice { display: inline-flex; margin-top: 10px; border-left: 3px solid var(--warn); padding: 4px 8px; background: var(--warn-bg); color: var(--warn-text); font: 600 12px/1.2 var(--font-body); letter-spacing: .04em; }
+
+/* Section labels */
+.no-decision-section-label { padding: 14px 32px 8px; color: var(--ink3); font: 600 11px/1 var(--font-body); letter-spacing: .18em; text-transform: uppercase; }
+.no-decision-section-label--muted { color: var(--ink4); }
+
+/* Decision list */
+.no-decision-list { display: flex; flex-direction: column; gap: 1px; padding: 0 32px 32px; }
+.no-decision-empty { padding: 24px 0; color: var(--ink3); font: 400 13.5px/1 var(--font-body); }
+
+/* Decision card */
+.no-decision-card { border: 1px solid var(--line); border-left-width: 4px; background: var(--raise); animation: noRise .45s cubic-bezier(.2,.8,.2,1) both; }
+.no-decision-card--egress { border-left-color: var(--warn); }
+.no-decision-card--local { border-left-color: var(--ok); }
+.no-decision-card--workflow { border-left-color: var(--line2); }
+.no-decision-card--muted { background: var(--panel); opacity: .72; }
+
+/* Card header */
+.no-decision-card__header { padding: 16px 18px 10px; }
+.no-decision-card__meta { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+.no-decision-title { margin: 0; color: var(--ink); font: 700 15.5px/1.25 var(--font-heading); letter-spacing: -.01em; }
+
+/* Risk badge */
+.no-decision-risk { display: inline-flex; align-items: center; padding: 3px 7px; font: 700 11px/1 var(--font-body); letter-spacing: .06em; text-transform: uppercase; }
+.no-decision-risk--high { background: var(--bad-bg); color: var(--bad-text); border: 1px solid var(--bad-line); }
+.no-decision-risk--medium { background: var(--warn-bg); color: var(--warn-text); border: 1px solid var(--warn-line); }
+.no-decision-risk--low { background: var(--ok-bg); color: var(--ok-text); border: 1px solid var(--ok); }
+
+/* Type label */
+.no-decision-type { color: var(--ink3); font: 600 12px/1 var(--font-body); letter-spacing: .04em; }
+
+/* Card body */
+.no-decision-card__body { padding: 0 18px 14px; }
+.no-decision-facts { display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; margin: 0 0 12px; }
+.no-decision-facts dt { color: var(--ink3); font: 600 12px/1.5 var(--font-body); }
+.no-decision-facts dd { margin: 0; color: var(--ink2); font: 400 12px/1.5 var(--font-body); }
+.no-decision-detail { max-width: 680px; margin: 0; color: var(--ink2); font: 400 13px/1.55 var(--font-body); text-wrap: pretty; }
+.no-decision-rejected-note { margin: 8px 0 0; color: var(--ink4); font: 400 12px/1 var(--font-body); }
+
+/* Card actions */
+.no-decision-card__actions { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 18px 16px; border-top: 1px solid var(--line); }
+.no-decision-btn { display: inline-flex; align-items: center; justify-content: center; min-height: 42px; padding: 10px 16px; border: 1px solid var(--btnline); background: transparent; color: var(--ink2); font: 600 12.5px/1 var(--font-body); cursor: pointer; text-align: left; }
+.no-decision-btn:hover { border-color: var(--accent); color: var(--ink); }
+.no-decision-btn:focus-visible { outline: var(--focus-ring); outline-offset: var(--focus-offset); }
+.no-decision-btn--approve { border-color: var(--ok); color: var(--ok-text); background: var(--ok-bg); }
+.no-decision-btn--approve:hover { filter: brightness(1.06); }
+.no-decision-btn--reject { color: var(--bad-text); border-color: var(--bad-line); background: var(--bad-bg); }
+.no-decision-btn--reject:hover { filter: brightness(1.06); }
+.no-decision-btn--alt { border-style: dashed; }
+.no-decision-btn--alt.is-selected { border-color: var(--violet); background: var(--violet-bg); color: var(--violet-text); }
+.no-decision-btn--changemind { border-color: var(--btnline); color: var(--ink3); }
+
+/* Acted state */
+.no-decision-acted { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.no-decision-badge { display: inline-flex; align-items: center; padding: 4px 10px; font: 700 12px/1 var(--font-body); letter-spacing: .04em; }
+.no-decision-badge--approved { background: var(--ok-bg); color: var(--ok-text); border: 1px solid var(--ok); }
+.no-decision-badge--rejected { background: var(--bad-bg); color: var(--bad-text); border: 1px solid var(--bad-line); }
+.no-decision-badge--alternative { background: var(--violet-bg); color: var(--violet-text); border: 1px solid var(--violet); }
+
+/* Mobile */
+@media (max-width: 480px) {
+  .no-decision-list { padding: 0 16px 24px; }
+  .no-page-header { padding: 18px 16px 14px; }
+  .no-decision-section-label { padding: 12px 16px 6px; }
+  .no-decision-btn { min-height: 48px; padding: 12px 16px; }
+  .no-decision-card__actions { flex-direction: column; }
+  .no-decision-btn--approve,
+  .no-decision-btn--reject,
+  .no-decision-btn--alt { width: 100%; }
+}
