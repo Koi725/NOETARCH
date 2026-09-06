@@ -3,7 +3,7 @@
 **Task:** FE-006 (M3 frontend completion)  
 **Scope:** All nine new M3 screen components plus updated M2 components  
 **Date:** 2026-09-06  
-**Method:** Static analysis (TypeScript, ESLint), unit tests (Testing Library), and code review. Live Chromium rendering not captured — CEO should run `npm run dev` in `frontend/` for visual verification.
+**Method:** Static analysis (TypeScript, ESLint), unit tests (Testing Library), and code review. Live Chromium rendering not captured — maintainer should run `npm run dev` in `frontend/` for visual verification.
 
 ## ARIA semantics inventory
 
@@ -192,7 +192,7 @@ Two screens require explicit user action before any consequence:
 
 **FirstRun step 6 (egress policy)** — Initial state: `egressDefault: null`. The Next button is disabled and shows a validation error (`role="alert"`) if pressed. The user must select an egress policy before advancing.
 
-This implements the CEO requirement: "No action preselected in DecisionCenter. FirstRun step 6 (egress policy): nothing preselected, validation blocks advance."
+This implements the maintainer requirement: "No action preselected in DecisionCenter. FirstRun step 6 (egress policy): nothing preselected, validation blocks advance."
 
 ## Focus management
 
@@ -228,7 +228,7 @@ Every new M3 screen shows one of:
 
 ## Known limitations
 
-- Live Chromium rendering not captured for M3; CEO should run `npm run dev` for visual verification
+- Live Chromium rendering not captured for M3; maintainer should run `npm run dev` for visual verification
 - External screen readers (NVDA, JAWS, VoiceOver on iOS/Android) not tested
 - Firefox, Safari, and Windows not tested
 - Physical touch devices not tested

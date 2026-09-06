@@ -1,23 +1,23 @@
 # M0 design handoff freeze
 
-**Task:** FE-000  
-**Owner:** GPT/Codex Co-CTO  
-**Initial approval:** M0 and M1 CEO-authorized on 2026-09-05; M2 was paused
-**Recovery decision:** M2 work crossed the intended stop, was identified by audit, and was prospectively authorized for completion/remediation after CEO review
-**Requested source:** `/Users/kousharezaei/Downloads/design_handoff_report` is absent
-**Canonical surviving source directory:** `/Users/kousharezaei/Downloads/design_handoff_noetarch`
+**Task:** FE-000
+**Owner:** frontend reviewer
+**Initial approval:** M0 and M1 authorized 2026-09-05; M2 was paused
+**Recovery decision:** M2 work crossed the intended stop, was identified by audit, and was prospectively authorized for completion/remediation after review
+**Requested source:** the `design_handoff_report` source directory is absent
+**Canonical surviving source directory:** `design_handoff_noetarch/` (an external, un-tracked handoff source provided to the project)
 **Missing source:** `README.md` was named by the earlier recovery record and by `PROMPTS.md`, but it is no longer present in either design-handoff location. It was not recreated, and claims that depended only on it are not treated as independently verified.
 
 ## Canonical source manifest
 
-Verified on 2026-09-06 using SHA-256:
+Verified using SHA-256. Sources are external handoff files (not tracked in this repo); only their filenames and hashes are recorded here.
 
-| Source | Canonical path | SHA-256 | Role |
+| Source | Source (relative) | SHA-256 | Role |
 |---|---|---|---|
-| `NOETARCH.dc.html` | `/Users/kousharezaei/Downloads/design_handoff_noetarch/NOETARCH.dc.html` | `b296fcb834871200088f118fc01fc4c7f7446cf7aaf35a989e81cbf941f84942` | Current visual and interaction prototype |
-| `PROMPTS.md` | `/Users/kousharezaei/Downloads/design_handoff_noetarch/PROMPTS.md` | `89cd4dc15b1d911f4b3d42ffd7890b35999de4a4e45bc2fcda48233ae46489aa` | Implementation and validation guidance |
-| `ProofFlow-v1.dc.html` | `/Users/kousharezaei/Downloads/design_handoff_noetarch/ProofFlow-v1.dc.html` | `2276b6237cd5afeddc48be9b71b093a99e838d71f3e653737861457832af3cf8` | Historical predecessor; not current visual authority |
-| `support.js` | `/Users/kousharezaei/Downloads/design_handoff_noetarch/support.js` | `8fe7df74405f3c55f49b7249c74ea1397e65d07dea2b1bd3b4a489bec2e28cbe` | Generated Design Canvas runtime; not product specification |
+| `NOETARCH.dc.html` | `design_handoff_noetarch/NOETARCH.dc.html` | `b296fcb834871200088f118fc01fc4c7f7446cf7aaf35a989e81cbf941f84942` | Current visual and interaction prototype |
+| `PROMPTS.md` | `design_handoff_noetarch/PROMPTS.md` | `89cd4dc15b1d911f4b3d42ffd7890b35999de4a4e45bc2fcda48233ae46489aa` | Implementation and validation guidance |
+| `predecessor-prototype.dc.html` | `design_handoff_noetarch/predecessor-prototype.dc.html` | `2276b6237cd5afeddc48be9b71b093a99e838d71f3e653737861457832af3cf8` | Historical predecessor; not current visual authority |
+| `support.js` | `design_handoff_noetarch/support.js` | `8fe7df74405f3c55f49b7249c74ea1397e65d07dea2b1bd3b4a489bec2e28cbe` | Generated Design Canvas runtime; not product specification |
 | `README.md` | Missing | Not available | Previously referenced supporting narrative; no substitute was invented |
 
 ## Product and visual thesis
@@ -72,18 +72,18 @@ frontend/
 
 ## Resolved conflicts and deferred choices
 
-- CEO convention overrides dotted filenames and colocated CSS Modules.
+- The project convention overrides dotted filenames and colocated CSS Modules.
 - Prototype inline styles and `ResizeObserver` breakpoints are tooling artifacts and are not ported.
 - Next.js is authoritative for this phase; Tauri/Electron is a later desktop-shell decision.
 - The handoff's simulated 900ms run tick is not implemented in M2 because it would fake backend behaviour.
 - `support.js` is generated Design Canvas runtime infrastructure, not application code.
-- `ProofFlow-v1.dc.html` is historical reference only; `NOETARCH.dc.html` and the handoff README are visual truth.
-- M0 and M1 were initially authorized. The recovery audit found that M2 implementation had crossed the intended M1 stop. The CEO subsequently authorized M2 completion/remediation prospectively; M3 remains blocked.
+- The predecessor prototype file is historical reference only; `NOETARCH.dc.html` and the handoff README are visual truth.
+- M0 and M1 were initially authorized. The recovery audit found that M2 implementation had crossed the intended M1 stop. Completion/remediation of M2 was subsequently authorized prospectively; M3 remains blocked.
 
 ## M1 and M2 boundary
 
-M1 establishes the exact-pinned Next.js/React/Tailwind/TypeScript toolchain, npm lockfile, lint, strict type-check, unit test, and production build commands. M2 establishes shared tokens and themes, foundational primitives, responsive shell/navigation, command palette, and one mock-only Today composition sufficient for visual verification. No backend file, API integration, Ruflo action, Git mutation, deployment, or M3 route implementation is permitted.
+M1 establishes the exact-pinned Next.js/React/Tailwind/TypeScript toolchain, npm lockfile, lint, strict type-check, unit test, and production build commands. M2 establishes shared tokens and themes, foundational primitives, responsive shell/navigation, command palette, and one mock-only Today composition sufficient for visual verification. No backend file, API integration, external-orchestration action, Git mutation, deployment, or M3 route implementation is permitted.
 
 ## Verification result
 
-The four surviving files were inspected and hashed. `NOETARCH.dc.html` directly verifies the complete Obsidian and Daylight colour tables, sixteen source-prototype keyframes, 900/1120/1180px responsive thresholds, ten-screen inventory, shell structure, interaction model, and both motion kill switches. `PROMPTS.md` independently confirms the ten-screen order, the same three responsive thresholds, and the required OS-level and in-app motion checks. `ProofFlow-v1.dc.html` is the earlier single-theme predecessor and is not current visual authority. `support.js` identifies itself as generated Design Canvas runtime infrastructure and contains no NOETARCH product specification. The missing `README.md` prevents re-verifying any narrative unique to that file, but no frozen M0 claim above relies solely on it. No binary design asset was required or copied.
+The four surviving files were inspected and hashed. `NOETARCH.dc.html` directly verifies the complete Obsidian and Daylight colour tables, sixteen source-prototype keyframes, 900/1120/1180px responsive thresholds, ten-screen inventory, shell structure, interaction model, and both motion kill switches. `PROMPTS.md` independently confirms the ten-screen order, the same three responsive thresholds, and the required OS-level and in-app motion checks. The predecessor prototype is the earlier single-theme version and is not current visual authority. `support.js` identifies itself as generated Design Canvas runtime infrastructure and contains no NOETARCH product specification. The missing `README.md` prevents re-verifying any narrative unique to that file, but no frozen M0 claim above relies solely on it. No binary design asset was required or copied.

@@ -1,8 +1,8 @@
 # M3 implementation record
 
 **Task:** FE-006 (M3 frontend completion)  
-**Owner:** Claude Senior Co-CTO  
-**Authorization:** CEO explicit M3 authorization per session 2026-09-06  
+**Owner:** the maintainer  
+**Authorization:** maintainer explicit M3 authorization per session 2026-09-06  
 **Date completed:** 2026-09-06  
 **Boundary:** Frontend only — no backend, no real APIs, no authentication, no desktop packaging, no Ruflo configuration changes, no Git mutations.
 
@@ -114,7 +114,7 @@ No horizontal page overflow. Internal scrolling allowed only inside the event le
 
 ## Remaining limitations
 
-- Rendered browser QA (screenshots) not captured — requires a running dev server. The CEO should run `npm run dev` in `frontend/` and verify each route visually. Static analysis and unit tests confirm correctness; visual verification confirms appearance.
+- Rendered browser QA (screenshots) not captured — requires a running dev server. The maintainer should run `npm run dev` in `frontend/` and verify each route visually. Static analysis and unit tests confirm correctness; visual verification confirms appearance.
 - Firefox, Safari, Windows, external screen readers, and physical touch devices not exercised (same limitation as M2).
 - The `RouteProgress` hairline animation activates on inter-route navigation but cannot be observed in unit tests.
 - StateGallery state 15 (narrow viewport) is a descriptive card, not a live narrow-viewport render.

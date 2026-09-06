@@ -1,6 +1,6 @@
 # NOETARCH Platform Overview
 
-**Audience:** the CEO and anyone who wants to understand the whole system in plain language.
+**Audience:** the maintainer and anyone who wants to understand the whole system in plain language.
 **Accurate as of:** M10 (2026-09-06). Written by reading the actual repository, not assumptions.
 
 **What changed since M6:** the backend now serves all read surfaces from a real database
@@ -182,7 +182,7 @@ NOETARCH is built least-privilege and deny-by-default. Concretely, in the code t
 - Mock fallback so the app runs with or without a backend.
 - Deny-by-default CORS, id validation, structured errors, body-size limit, no egress.
 
-### Deliberately deferred (each needs its own CEO-authorized milestone + review)
+### Deliberately deferred (each needs its own maintainer-authorized milestone + review)
 
 - **External data sources.** No calls to OpenAlex, Crossref, Semantic Scholar, Anthropic,
   etc. Real fetching is blocked until an egress-reviewed milestone. (The seed *describes*
