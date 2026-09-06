@@ -52,3 +52,26 @@ ruvector.db
 *.rvf
 agentdb.rvf*
 .claude/
+
+# ── M13 repo-hygiene hardening ──────────────────────────────────────────────
+# Databases & local state
+*.db
+*.sqlite
+*.sqlite3
+*.db-wal
+*.db-shm
+# Keep example env files tracked even though .env.* is ignored above
+!*.env.example
+!.env.example
+# Message bus / local project state
+**/bus/v1/
+.noetarch/
+# Local outputs / scratch
+outputs/
+*.local.*
+# OS / editor cruft
+Thumbs.db
+.idea/
+.vscode/
+
+.Claude outputs/
