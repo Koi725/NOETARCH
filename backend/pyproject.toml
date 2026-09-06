@@ -35,6 +35,10 @@ src = ["src", "tests"]
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "S", "ASYNC"]
 
+# FastAPI dependency markers are intentionally used as argument defaults.
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = ["fastapi.Depends", "fastapi.Query", "fastapi.Path"]
+
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["S101"]
 
@@ -42,6 +46,12 @@ select = ["E", "F", "I", "B", "UP", "S", "ASYNC"]
 python_version = "3.11"
 strict = true
 files = ["src", "tests"]
+
+# Alembic is used only by the migration-applies test; skip strict typing of it.
+[[tool.mypy.overrides]]
+module = ["alembic", "alembic.*"]
+ignore_missing_imports = true
+follow_imports = "skip"
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
