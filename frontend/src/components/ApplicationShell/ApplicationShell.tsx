@@ -1,13 +1,19 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { CommandPalette } from "@/components/CommandPalette";
 import { RouteProgress } from "@/components/RouteProgress";
 import { SidebarNavigation } from "@/components/SidebarNavigation";
-import { TodayOverview } from "@/components/TodayOverview";
 import type { ApplicationShellProps } from "./ApplicationShell_types";
 import "@/tailwind/components/ApplicationShell/ApplicationShell.css";
+
+type ShellContextValue = { openPalette: () => void };
+const ShellContext = createContext<ShellContextValue>({ openPalette: () => {} });
+
+export function useShell(): ShellContextValue {
+  return useContext(ShellContext);
+}
 
 export function ApplicationShell({ children }: ApplicationShellProps) {
   const pathname = usePathname() ?? "/";
@@ -36,13 +42,15 @@ export function ApplicationShell({ children }: ApplicationShellProps) {
   }, []);
 
   return (
-    <div className="no-application-shell">
-      <RouteProgress active={routing} />
-      <SidebarNavigation currentPath={pathname} onOpenPalette={openPalette} onNavigate={setRoutingTarget} />
-      <main className="no-shell-main">
-        {children ?? <TodayOverview onOpenPalette={openPalette} />}
-      </main>
-      <CommandPalette open={paletteOpen} onClose={closePalette} onNavigate={navigate} />
-    </div>
+    <ShellContext.Provider value={{ openPalette }}>
+      <div className="no-application-shell">
+        <RouteProgress active={routing} />
+        <SidebarNavigation currentPath={pathname} onOpenPalette={openPalette} onNavigate={setRoutingTarget} />
+        <main className="no-shell-main">
+          {children}
+        </main>
+        <CommandPalette open={paletteOpen} onClose={closePalette} onNavigate={navigate} />
+      </div>
+    </ShellContext.Provider>
   );
 }
