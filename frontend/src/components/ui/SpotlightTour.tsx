@@ -1,22 +1,21 @@
 "use client";
 
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { computeCoachmarkPosition, type Box } from "./tour-position";
 import type { TourStep } from "./tour-types";
 import "@/tailwind/components/Tour/Tour.css";
 
-interface Rect {
-  top: number;
-  left: number;
-  width: number;
-  height: number;
-}
-
-function readRect(targetId: string): Rect | null {
+function readRect(targetId: string): Box | null {
   if (typeof document === "undefined") return null;
   const el = document.getElementById(targetId);
   if (!el) return null;
   const r = el.getBoundingClientRect();
   return { top: r.top, left: r.left, width: r.width, height: r.height };
+}
+
+function viewport(): { width: number; height: number } {
+  if (typeof window === "undefined") return { width: 1024, height: 768 };
+  return { width: window.innerWidth, height: window.innerHeight };
 }
 
 export interface SpotlightTourProps {
@@ -28,15 +27,17 @@ export interface SpotlightTourProps {
 
 /**
  * A guided coachmark tour: highlights one target, dims the rest, and steps through
- * data-driven { title, explanation } entries. Accessible dialog with focus-trap, Esc to
- * close, keyboard next/prev/skip, and screen-reader step announcements.
+ * data-driven { title, explanation } entries. The compact card is positioned relative to
+ * its target with edge-flip (never off-screen, never obscuring the highlight). Accessible
+ * dialog with focus-trap, Esc to close, keyboard next/prev/skip, and SR step announcements.
  *
- * Must be rendered inside a ThemeProvider (for reduced-motion), which the app root
- * provides. Does NOT aria-hide the rest of the app, so underlying content stays queryable.
+ * Must render inside a ThemeProvider (for reduced motion), which the app root provides.
+ * Does NOT aria-hide the rest of the app, so underlying content stays queryable.
  */
 export function SpotlightTour({ steps, onClose, reducedMotion = false }: SpotlightTourProps) {
   const [index, setIndex] = useState(0);
-  const [rect, setRect] = useState<Rect | null>(null);
+  const [rect, setRect] = useState<Box | null>(null);
+  const [cardSize, setCardSize] = useState({ width: 320, height: 180 });
   const dialogRef = useRef<HTMLDivElement>(null);
   const nextRef = useRef<HTMLButtonElement>(null);
   const previouslyFocused = useRef<HTMLElement | null>(null);
@@ -48,16 +49,9 @@ export function SpotlightTour({ steps, onClose, reducedMotion = false }: Spotlig
   const isFirst = index === 0;
   const isLast = index >= total - 1;
 
-  const close = useCallback(() => {
-    onClose();
-  }, [onClose]);
-
-  const goNext = useCallback(() => {
-    setIndex((i) => (i >= total - 1 ? i : i + 1));
-  }, [total]);
-  const goPrev = useCallback(() => {
-    setIndex((i) => (i <= 0 ? 0 : i - 1));
-  }, []);
+  const close = useCallback(() => onClose(), [onClose]);
+  const goNext = useCallback(() => setIndex((i) => (i >= total - 1 ? i : i + 1)), [total]);
+  const goPrev = useCallback(() => setIndex((i) => (i <= 0 ? 0 : i - 1)), []);
 
   // Track the highlighted element's rectangle (recompute on step change + resize/scroll).
   useEffect(() => {
@@ -71,6 +65,14 @@ export function SpotlightTour({ steps, onClose, reducedMotion = false }: Spotlig
       window.removeEventListener("scroll", update, true);
     };
   }, [step]);
+
+  // Measure the compact card so placement can flip/clamp correctly.
+  useLayoutEffect(() => {
+    const el = dialogRef.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    if (r.width > 0 && r.height > 0) setCardSize({ width: r.width, height: r.height });
+  }, [index, rect]);
 
   // Focus management: focus the coachmark on open, restore on close.
   useEffect(() => {
@@ -134,6 +136,11 @@ export function SpotlightTour({ steps, onClose, reducedMotion = false }: Spotlig
     } as const;
   }, [rect]);
 
+  const position = useMemo(
+    () => computeCoachmarkPosition(rect, cardSize, viewport()),
+    [rect, cardSize],
+  );
+
   if (!step) return null;
 
   return (
@@ -144,9 +151,7 @@ export function SpotlightTour({ steps, onClose, reducedMotion = false }: Spotlig
     >
       {/* Dimming overlay + spotlight cutout (visual only; not aria-hidden). */}
       <div className="no-tour-overlay" aria-hidden="true" onClick={close}>
-        {highlightStyle && (
-          <div className="no-tour-spotlight" style={highlightStyle} />
-        )}
+        {highlightStyle && <div className="no-tour-spotlight" style={highlightStyle} />}
       </div>
 
       {/* Screen-reader announcement of the current step. */}
@@ -157,6 +162,8 @@ export function SpotlightTour({ steps, onClose, reducedMotion = false }: Spotlig
       <div
         ref={dialogRef}
         className="no-tour-coachmark"
+        data-placement={position.placement}
+        style={{ top: position.top, left: position.left }}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
