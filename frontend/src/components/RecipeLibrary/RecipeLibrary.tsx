@@ -7,6 +7,7 @@ import type {
   CustomRecipe,
   RecipeLibraryProps,
 } from "./RecipeLibrary_types";
+import { useScreenTour, RecipesSkeleton, RECIPES_TOUR_KEY, RECIPES_TOUR_STEPS } from "@/components/ui";
 import "@/tailwind/components/RecipeLibrary/RecipeLibrary.css";
 
 function RecipeCard({
@@ -171,6 +172,7 @@ function RecipeCard({
 }
 
 export function RecipeLibrary({ recipes: recipesProp }: RecipeLibraryProps) {
+  useScreenTour(RECIPES_TOUR_KEY, RECIPES_TOUR_STEPS);
   const [recipes, setRecipes] = useState<Recipe[] | null>(recipesProp ?? null);
   const [error, setError] = useState<string | null>(null);
 
@@ -204,9 +206,9 @@ export function RecipeLibrary({ recipes: recipesProp }: RecipeLibraryProps) {
   if (!recipes) {
     return (
       <main className="no-recipe-library" aria-label="Recipe library">
-        <p className="no-recipe-loading" role="status" aria-label="Loading recipes">
-          Loading recipes…
-        </p>
+        <div role="status" aria-label="Loading recipes">
+          <RecipesSkeleton />
+        </div>
       </main>
     );
   }
@@ -244,7 +246,7 @@ function RecipeLibraryView({ recipes }: { recipes: Recipe[] }) {
   return (
     <main className="no-recipe-library" aria-label="Recipe library">
       <header className="no-page-header">
-        <h1 className="no-page-title">Recipes · Save time with reusable workflows</h1>
+        <h1 id="recipes-header" className="no-page-title">Recipes · Save time with reusable workflows</h1>
         <p className="no-prototype-notice" role="note">
           Simulated · no backend
         </p>
@@ -263,7 +265,7 @@ function RecipeLibraryView({ recipes }: { recipes: Recipe[] }) {
         )}
       </div>
 
-      <div className="no-recipe-grid">
+      <div id="recipes-grid" className="no-recipe-grid">
         {allRecipes.map((recipe) => (
           <RecipeCard
             key={recipe.id}
