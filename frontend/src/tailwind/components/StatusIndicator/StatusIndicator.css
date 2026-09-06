@@ -1,0 +1,68 @@
+.status-indicator {
+  display: inline-flex;
+  min-height: 24px;
+  align-items: center;
+  gap: 7px;
+  border-left: 3px solid var(--line);
+  padding: 3px 8px;
+  color: var(--ink2);
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+.status-indicator__square {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 7px;
+  background: var(--ink3);
+}
+
+.status-indicator--live {
+  border-left-color: var(--accent);
+  color: var(--accent-text);
+}
+
+.status-indicator--live .status-indicator__square {
+  background: var(--accent);
+  animation: noBeat 1.8s ease-in-out infinite;
+}
+
+.status-indicator--pending,
+.status-indicator--warning {
+  border-left-color: var(--warn);
+  color: var(--warn-text);
+}
+
+.status-indicator--pending .status-indicator__square,
+.status-indicator--warning .status-indicator__square {
+  background: var(--warn);
+}
+
+.status-indicator--verified,
+.status-indicator--complete {
+  border-left-color: var(--ok);
+  color: var(--ok-text);
+}
+
+.status-indicator--verified .status-indicator__square,
+.status-indicator--complete .status-indicator__square {
+  background: var(--ok);
+}
+
+.status-indicator--failed {
+  border-left-color: var(--bad);
+  color: var(--bad-text);
+}
+
+.status-indicator--failed .status-indicator__square {
+  background: var(--bad);
+}
+
+.status-indicator--unverified {
+  border-left-color: var(--violet);
+  color: var(--violet-text);
+}
+
+.status-indicator--unverified .status-indicator__square {
+  background: var(--violet);
+}
