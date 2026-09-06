@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useId } from "react";
+import { ShieldCheck, ShieldAlert, AlertTriangle, Check, X, Upload } from "lucide-react";
 import {
   fetchDecisions,
   actionDecision,
@@ -33,6 +34,13 @@ function typeLabel(type: Decision["type"]): string {
   if (type === "cloud-egress") return "Cloud · data egress";
   if (type === "local-file") return "Local · file write";
   return "Workflow change";
+}
+
+function RiskGlyph({ risk }: { risk: Decision["risk"] }) {
+  const props = { size: 14, strokeWidth: 2, "aria-hidden": true } as const;
+  if (risk === "high") return <ShieldAlert {...props} />;
+  if (risk === "medium") return <AlertTriangle {...props} />;
+  return <ShieldCheck {...props} />;
 }
 
 function actionToStatus(action: DecisionActionType): DecisionStatus {
@@ -92,9 +100,15 @@ function DecisionCard({
             className={`no-decision-risk no-decision-risk--${decision.risk}`}
             aria-label={riskLabel(decision.risk)}
           >
+            <RiskGlyph risk={decision.risk} />
             {riskLabel(decision.risk)}
           </span>
-          <span className="no-decision-type">{typeLabel(decision.type)}</span>
+          <span className="no-decision-type">
+            {decision.type === "cloud-egress" && (
+              <Upload size={13} strokeWidth={2} aria-hidden="true" />
+            )}
+            {typeLabel(decision.type)}
+          </span>
         </div>
         <h2 className="no-decision-title" id={`${detailId}-title`}>
           {decision.title}
@@ -137,6 +151,7 @@ function DecisionCard({
               onClick={() => onAction("approve")}
               disabled={ui.inFlight}
             >
+              <Check size={15} strokeWidth={2.2} aria-hidden="true" />
               Approve once
             </button>
             {decision.alternatives.map((alt, idx) => (
@@ -156,6 +171,7 @@ function DecisionCard({
               onClick={() => onAction("reject")}
               disabled={ui.inFlight}
             >
+              <X size={15} strokeWidth={2.2} aria-hidden="true" />
               Reject
             </button>
           </>
