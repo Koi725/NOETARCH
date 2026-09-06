@@ -115,3 +115,28 @@
   .no-ev-record-row { min-height: 48px; flex-wrap: wrap; }
   .no-ev-close-btn { min-width: 48px; min-height: 48px; }
 }
+
+/* M13: compact, secondary external-fetch control (collapsed by default) */
+.no-ev-external { margin: 8px 0 4px; }
+.no-ev-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 11px;
+  border: 1px solid var(--btnline, #2a3040);
+  background: transparent;
+  color: var(--ink2, #c7cede);
+  font: 600 12.5px/1 var(--font-body);
+  cursor: pointer;
+}
+.no-ev-add-btn:hover { border-color: var(--accent, #6ea8fe); color: var(--ink, #e7ecf3); }
+.no-ev-ext-cancel {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  border: 1px solid var(--btnline, #2a3040);
+  background: transparent;
+  color: var(--ink2, #c7cede);
+  cursor: pointer;
+}

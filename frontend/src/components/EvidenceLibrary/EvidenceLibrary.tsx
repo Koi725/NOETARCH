@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useEffect, useMemo, useId, useCallback } from "react";
+import { Search, X } from "lucide-react";
 import {
   fetchEvidenceData,
   searchEvidence,
   type EvidenceSearchResult,
 } from "@/services/EvidenceService";
+import { isRealBackend } from "@/services/DecisionService";
 import type {
   EvidenceRecord,
   EvidenceFilter,
@@ -179,6 +181,10 @@ export function EvidenceLibrary() {
   const [searching, setSearching] = useState(false);
   const [searchStatus, setSearchStatus] = useState<EvidenceSearchResult | null>(null);
   const [searchError, setSearchError] = useState<string | null>(null);
+  const [fetchOpen, setFetchOpen] = useState(false);
+  // Only offer external fetch when a real backend is configured. In the default
+  // local/mock mode the OpenAlex fetch action is not rendered at all.
+  const externalAvailable = isRealBackend();
   useScreenTour(EVIDENCE_TOUR_KEY, EVIDENCE_TOUR_STEPS);
 
   const handleExternalSearch = useCallback(
@@ -307,47 +313,72 @@ export function EvidenceLibrary() {
           />
         </div>
 
-        {/* External source fetch (OpenAlex) — off in mock mode / when the flag is disabled */}
-        <form
-          id="evidence-external-search"
-          className="no-ev-external-search"
-          onSubmit={handleExternalSearch}
-          aria-label="Search external sources"
-        >
-          <label htmlFor={extSearchId} className="sr-only">
-            Search external sources (OpenAlex)
-          </label>
-          <input
-            id={extSearchId}
-            type="search"
-            className="no-ev-ext-input"
-            placeholder="Fetch new papers from OpenAlex…"
-            value={extQuery}
-            onChange={(e) => setExtQuery(e.target.value)}
-            disabled={searching}
-            aria-label="Search external sources"
-          />
-          <button
-            type="submit"
-            className="no-secondary-button"
-            disabled={searching || extQuery.trim() === ""}
-          >
-            {searching ? "Fetching…" : "Fetch from OpenAlex"}
-          </button>
-        </form>
-        {searchError && (
-          <p className="no-ev-search-error" role="alert">
-            {searchError}
-          </p>
-        )}
-        {searchStatus && !searchError && (
-          <p className="no-ev-search-status" role="status" aria-live="polite">
-            {searchStatus.enabled
-              ? `Fetched ${searchStatus.records.length} · froze ${searchStatus.frozen} · deduped ${searchStatus.deduplicated}${
-                  searchStatus.retrievedAt ? ` · retrieved ${searchStatus.retrievedAt}` : ""
-                }`
-              : searchStatus.message}
-          </p>
+        {/* External source fetch (OpenAlex): a deliberate, secondary egress action. Rendered
+            only when a real backend is configured; collapsed behind a small button by default.
+            In local/mock mode it is not shown at all. */}
+        {externalAvailable && (
+          <div id="evidence-external-search" className="no-ev-external">
+            {!fetchOpen ? (
+              <button
+                type="button"
+                className="no-ev-add-btn"
+                onClick={() => setFetchOpen(true)}
+              >
+                <Search size={14} strokeWidth={2} aria-hidden="true" />
+                Add from OpenAlex
+              </button>
+            ) : (
+              <form
+                className="no-ev-external-search"
+                onSubmit={handleExternalSearch}
+                aria-label="Search external sources"
+              >
+                <label htmlFor={extSearchId} className="sr-only">
+                  Search external sources (OpenAlex)
+                </label>
+                <input
+                  id={extSearchId}
+                  type="search"
+                  className="no-ev-ext-input"
+                  placeholder="Fetch new papers from OpenAlex…"
+                  value={extQuery}
+                  onChange={(e) => setExtQuery(e.target.value)}
+                  disabled={searching}
+                  aria-label="Search external sources"
+                  autoFocus
+                />
+                <button
+                  type="submit"
+                  className="no-secondary-button"
+                  disabled={searching || extQuery.trim() === ""}
+                >
+                  {searching ? "Fetching…" : "Fetch"}
+                </button>
+                <button
+                  type="button"
+                  className="no-ev-ext-cancel"
+                  onClick={() => setFetchOpen(false)}
+                  aria-label="Cancel external fetch"
+                >
+                  <X size={14} strokeWidth={2} aria-hidden="true" />
+                </button>
+              </form>
+            )}
+            {searchError && (
+              <p className="no-ev-search-error" role="alert">
+                {searchError}
+              </p>
+            )}
+            {searchStatus && !searchError && (
+              <p className="no-ev-search-status" role="status" aria-live="polite">
+                {searchStatus.enabled
+                  ? `Fetched ${searchStatus.records.length} · froze ${searchStatus.frozen} · deduped ${searchStatus.deduplicated}${
+                      searchStatus.retrievedAt ? ` · retrieved ${searchStatus.retrievedAt}` : ""
+                    }`
+                  : searchStatus.message}
+              </p>
+            )}
+          </div>
         )}
 
         <div id="evidence-filters" className="no-ev-filter-chips" role="group" aria-label="Filter records">
