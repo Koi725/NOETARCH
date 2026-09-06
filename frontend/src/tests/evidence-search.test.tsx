@@ -3,13 +3,13 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { EvidenceLibrary } from "@/components/EvidenceLibrary";
 
-describe("EvidenceLibrary external search", () => {
+describe("EvidenceLibrary external fetch — gated + collapsed (M13)", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
     vi.unstubAllEnvs();
   });
 
-  test("mock mode: fetching shows a clear disabled state and makes no network call", async () => {
+  test("mock/flag-off default: the OpenAlex fetch control is NOT rendered at all", async () => {
     const spyFetch = vi.fn();
     vi.stubGlobal("fetch", spyFetch);
 
@@ -18,20 +18,46 @@ describe("EvidenceLibrary external search", () => {
         <EvidenceLibrary />
       </ThemeProvider>,
     );
-    // Wait for the initial (mock) load.
     await screen.findByRole("searchbox", { name: "Search evidence records" });
 
-    const input = screen.getByRole("searchbox", { name: "Search external sources" });
-    fireEvent.change(input, { target: { value: "worker well-being" } });
-    fireEvent.click(screen.getByRole("button", { name: "Fetch from OpenAlex" }));
-
-    await waitFor(() =>
-      expect(screen.getByText(/showing local data only/i)).toBeInTheDocument(),
-    );
+    // No external-fetch affordance in the default local/mock mode.
+    expect(screen.queryByRole("button", { name: /Add from OpenAlex/i })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("searchbox", { name: "Search external sources" }),
+    ).not.toBeInTheDocument();
     expect(spyFetch).not.toHaveBeenCalled();
   });
 
-  test("real mode: a fetched record is merged into the list with a status banner", async () => {
+  test("real backend: a compact 'Add from OpenAlex' button is present (collapsed)", async () => {
+    vi.stubEnv("NEXT_PUBLIC_API_BASE", "http://localhost:8000");
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ project: "P", records: [] }),
+    });
+    vi.stubGlobal("fetch", mockFetch);
+
+    render(
+      <ThemeProvider>
+        <EvidenceLibrary />
+      </ThemeProvider>,
+    );
+    await screen.findByRole("searchbox", { name: "Search evidence records" });
+
+    // Collapsed by default: the button is shown, the input is not.
+    const addBtn = screen.getByRole("button", { name: /Add from OpenAlex/i });
+    expect(addBtn).toBeInTheDocument();
+    expect(
+      screen.queryByRole("searchbox", { name: "Search external sources" }),
+    ).not.toBeInTheDocument();
+
+    // Expands on demand to reveal the input.
+    fireEvent.click(addBtn);
+    expect(
+      screen.getByRole("searchbox", { name: "Search external sources" }),
+    ).toBeInTheDocument();
+  });
+
+  test("real backend: fetching merges a record and shows the status banner", async () => {
     vi.stubEnv("NEXT_PUBLIC_API_BASE", "http://localhost:8000");
     const fetched = {
       enabled: true,
@@ -50,7 +76,7 @@ describe("EvidenceLibrary external search", () => {
           doi: "10.9999/new.1",
           status: "checked",
           sources: [],
-          provenance: ["Retrieved from OpenAlex on 2026-09-06T14:00:00+00:00"],
+          provenance: ["Retrieved from OpenAlex"],
           agreementCount: 1,
           totalSources: 1,
           source: "openalex",
@@ -63,11 +89,7 @@ describe("EvidenceLibrary external search", () => {
       if (url.endsWith("/evidence/search")) {
         return Promise.resolve({ ok: true, json: async () => fetched });
       }
-      // initial GET /evidence load
-      return Promise.resolve({
-        ok: true,
-        json: async () => ({ project: "P", records: [] }),
-      });
+      return Promise.resolve({ ok: true, json: async () => ({ project: "P", records: [] }) });
     });
     vi.stubGlobal("fetch", mockFetch);
 
@@ -78,10 +100,11 @@ describe("EvidenceLibrary external search", () => {
     );
     await screen.findByRole("searchbox", { name: "Search evidence records" });
 
+    fireEvent.click(screen.getByRole("button", { name: /Add from OpenAlex/i }));
     fireEvent.change(screen.getByRole("searchbox", { name: "Search external sources" }), {
       target: { value: "worker well-being" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Fetch from OpenAlex" }));
+    fireEvent.click(screen.getByRole("button", { name: "Fetch" }));
 
     await waitFor(() =>
       expect(screen.getByText("A freshly fetched paper")).toBeInTheDocument(),
