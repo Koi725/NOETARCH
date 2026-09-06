@@ -1,0 +1,53 @@
+.progress-bar {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  color: var(--ink2);
+  font-size: 12px;
+}
+
+.progress-bar__heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.progress-bar__value {
+  color: var(--ink3);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.progress-bar__track {
+  position: relative;
+  height: 8px;
+  overflow: hidden;
+  background: var(--line2);
+}
+
+.progress-bar__fill {
+  display: block;
+  width: var(--progress);
+  height: 100%;
+  min-width: 0;
+  background: var(--accent);
+  transform-origin: left;
+  animation: noBarGrow 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.progress-bar__track[data-indeterminate="true"] .progress-bar__fill {
+  width: 36%;
+  animation: noSweep 1.8s ease-in-out infinite;
+}
+
+.progress-bar__sweep {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 72px;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--ink) 18%, transparent), transparent);
+  animation: noSweep 2.4s linear infinite;
+  pointer-events: none;
+}
