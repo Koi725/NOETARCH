@@ -9,23 +9,23 @@ Security controls:
   - No write endpoints on this surface.
   - CORS allowlist enforced at the app level (NOETARCH_CORS_ALLOW_ORIGINS).
 """
-from fastapi import APIRouter, HTTPException, Path
+from fastapi import APIRouter, Depends, HTTPException, Path
+from sqlalchemy.orm import Session
 
+from noetarch.core.database import get_session
 from noetarch.modules.evidence.repository import EvidenceRepository
 from noetarch.modules.evidence.schemas import EvidenceListResponse, EvidenceRecord
 from noetarch.modules.evidence.service import EvidenceService
 
 router = APIRouter(tags=["evidence"])
 
-_service = EvidenceService(EvidenceRepository())
-
 _ID_PATTERN = r"^[a-z][a-z0-9_-]{0,62}$"
 
 
 @router.get("", response_model=EvidenceListResponse)
-def list_evidence() -> EvidenceListResponse:
+def list_evidence(session: Session = Depends(get_session)) -> EvidenceListResponse:
     """List all evidence records for the active project."""
-    return _service.list_records()
+    return EvidenceService(EvidenceRepository(session)).list_records()
 
 
 @router.get("/{record_id}", response_model=EvidenceRecord)
@@ -37,9 +37,10 @@ def get_evidence(
         pattern=_ID_PATTERN,
         description="Evidence record ID. Must start with a lowercase letter.",
     ),
+    session: Session = Depends(get_session),
 ) -> EvidenceRecord:
     """Retrieve a single evidence record by ID. Returns 404 if not found."""
-    record = _service.get_record(record_id)
+    record = EvidenceService(EvidenceRepository(session)).get_record(record_id)
     if record is None:
         raise HTTPException(status_code=404, detail=f"Evidence record '{record_id}' not found.")
     return record

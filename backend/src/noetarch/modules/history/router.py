@@ -11,18 +11,18 @@ Security controls:
   - CORS allowlist enforced at the app level (NOETARCH_CORS_ALLOW_ORIGINS).
   - No external egress; all data is in-process seed.
 """
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
 
+from noetarch.core.database import get_session
 from noetarch.modules.history.repository import HistoryRepository
 from noetarch.modules.history.schemas import HistoryRun
 from noetarch.modules.history.service import HistoryService
 
 router = APIRouter(tags=["history"])
 
-_service = HistoryService(HistoryRepository())
-
 
 @router.get("", response_model=list[HistoryRun])
-def list_runs() -> list[HistoryRun]:
+def list_runs(session: Session = Depends(get_session)) -> list[HistoryRun]:
     """List recent runs (active and past) for the History & replay screen."""
-    return _service.list_runs()
+    return HistoryService(HistoryRepository(session)).list_runs()

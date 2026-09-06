@@ -9,23 +9,23 @@ Security controls:
   - No internal model fields, stack traces, or seed details in any response.
   - CORS allowlist enforced at the app level (NOETARCH_CORS_ALLOW_ORIGINS).
 """
-from fastapi import APIRouter, HTTPException, Path
+from fastapi import APIRouter, Depends, HTTPException, Path
+from sqlalchemy.orm import Session
 
+from noetarch.core.database import get_session
 from noetarch.modules.decisions.repository import DecisionRepository
 from noetarch.modules.decisions.schemas import Decision
 from noetarch.modules.decisions.service import DecisionService
 
 router = APIRouter(tags=["decisions"])
 
-_service = DecisionService(DecisionRepository())
-
 _ID_PATTERN = r"^[a-z0-9][a-z0-9_-]{0,62}$"
 
 
 @router.get("", response_model=list[Decision])
-def list_decisions() -> list[Decision]:
+def list_decisions(session: Session = Depends(get_session)) -> list[Decision]:
     """List all decisions awaiting or past review."""
-    return _service.list_decisions()
+    return DecisionService(DecisionRepository(session)).list_decisions()
 
 
 @router.get("/{decision_id}", response_model=Decision)
@@ -37,9 +37,10 @@ def get_decision(
         pattern=_ID_PATTERN,
         description="Decision ID. Lowercase alphanumerics, hyphen, underscore.",
     ),
+    session: Session = Depends(get_session),
 ) -> Decision:
     """Retrieve a single decision by ID. Returns 404 if not found."""
-    decision = _service.get_decision(decision_id)
+    decision = DecisionService(DecisionRepository(session)).get_decision(decision_id)
     if decision is None:
         raise HTTPException(status_code=404, detail=f"Decision '{decision_id}' not found.")
     return decision

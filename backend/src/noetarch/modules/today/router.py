@@ -6,18 +6,18 @@ Security controls:
   - CORS allowlist enforced at the app level (NOETARCH_CORS_ALLOW_ORIGINS).
   - No external egress; all data is in-process seed.
 """
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
 
+from noetarch.core.database import get_session
 from noetarch.modules.today.repository import TodayRepository
 from noetarch.modules.today.schemas import TodayData
 from noetarch.modules.today.service import TodayService
 
 router = APIRouter(tags=["today"])
 
-_service = TodayService(TodayRepository())
-
 
 @router.get("", response_model=TodayData)
-def get_today() -> TodayData:
+def get_today(session: Session = Depends(get_session)) -> TodayData:
     """Return the current workspace snapshot for the Today screen."""
-    return _service.get_today()
+    return TodayService(TodayRepository(session)).get_today()

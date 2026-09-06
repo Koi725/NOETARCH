@@ -1,11 +1,42 @@
-"""In-process Decisions repository. No database, no network, no file I/O."""
+"""Decisions repository — DB-backed (SQLAlchemy), maps ORM rows to Pydantic schemas."""
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
+from noetarch.modules.decisions.infrastructure.models import DecisionORM
 from noetarch.modules.decisions.schemas import Decision
-from noetarch.modules.decisions.seed import SEED_DECISIONS
 
 
 class DecisionRepository:
+    def __init__(self, session: Session) -> None:
+        self._session = session
+
     def list_all(self) -> list[Decision]:
-        return list(SEED_DECISIONS)
+        rows = (
+            self._session.execute(select(DecisionORM).order_by(DecisionORM.sort_order))
+            .scalars()
+            .all()
+        )
+        return [self._to_schema(r) for r in rows]
 
     def get_by_id(self, decision_id: str) -> Decision | None:
-        return next((d for d in SEED_DECISIONS if d.id == decision_id), None)
+        row = self._session.get(DecisionORM, decision_id)
+        return self._to_schema(row) if row is not None else None
+
+    @staticmethod
+    def _to_schema(row: DecisionORM) -> Decision:
+        return Decision.model_validate(
+            {
+                "id": row.id,
+                "title": row.title,
+                "type": row.type,
+                "risk": row.risk,
+                "payload": row.payload,
+                "cost": row.cost,
+                "time": row.time,
+                "reversible": row.reversible,
+                "detail": row.detail,
+                "alternatives": row.alternatives,
+                "status": row.status,
+                "rejectedAt": row.rejected_at,
+            }
+        )

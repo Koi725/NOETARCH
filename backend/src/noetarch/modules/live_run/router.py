@@ -8,18 +8,18 @@ Security controls:
   - CORS allowlist enforced at the app level (NOETARCH_CORS_ALLOW_ORIGINS).
   - No external egress; all data is in-process seed.
 """
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
 
+from noetarch.core.database import get_session
 from noetarch.modules.live_run.repository import LiveRunRepository
 from noetarch.modules.live_run.schemas import LiveRunData
 from noetarch.modules.live_run.service import LiveRunService
 
 router = APIRouter(tags=["live-run"])
 
-_service = LiveRunService(LiveRunRepository())
-
 
 @router.get("", response_model=LiveRunData)
-def get_active_run() -> LiveRunData:
+def get_active_run(session: Session = Depends(get_session)) -> LiveRunData:
     """Return the active run snapshot for the Live Run screen."""
-    return _service.get_active_run()
+    return LiveRunService(LiveRunRepository(session)).get_active_run()

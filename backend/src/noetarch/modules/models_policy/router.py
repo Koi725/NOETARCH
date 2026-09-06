@@ -13,23 +13,23 @@ Security controls:
   - No internal model fields, stack traces, or seed details in any response.
   - CORS allowlist enforced at the app level (NOETARCH_CORS_ALLOW_ORIGINS).
 """
-from fastapi import APIRouter, HTTPException, Path
+from fastapi import APIRouter, Depends, HTTPException, Path
+from sqlalchemy.orm import Session
 
+from noetarch.core.database import get_session
 from noetarch.modules.models_policy.repository import ModelsPolicyRepository
 from noetarch.modules.models_policy.schemas import PolicyProvider
 from noetarch.modules.models_policy.service import ModelsPolicyService
 
 router = APIRouter(tags=["models-policy"])
 
-_service = ModelsPolicyService(ModelsPolicyRepository())
-
 _ID_PATTERN = r"^[a-z0-9][a-z0-9_-]{0,62}$"
 
 
 @router.get("/providers", response_model=list[PolicyProvider])
-def list_providers() -> list[PolicyProvider]:
+def list_providers(session: Session = Depends(get_session)) -> list[PolicyProvider]:
     """List all configured AI providers and their policy settings."""
-    return _service.list_providers()
+    return ModelsPolicyService(ModelsPolicyRepository(session)).list_providers()
 
 
 @router.get("/providers/{provider_id}", response_model=PolicyProvider)
@@ -41,9 +41,10 @@ def get_provider(
         pattern=_ID_PATTERN,
         description="Provider ID. Lowercase alphanumerics, hyphen, underscore.",
     ),
+    session: Session = Depends(get_session),
 ) -> PolicyProvider:
     """Retrieve a single provider policy by ID. Returns 404 if not found."""
-    provider = _service.get_provider(provider_id)
+    provider = ModelsPolicyService(ModelsPolicyRepository(session)).get_provider(provider_id)
     if provider is None:
         raise HTTPException(status_code=404, detail=f"Provider '{provider_id}' not found.")
     return provider

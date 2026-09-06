@@ -8,18 +8,18 @@ Security controls:
   - CORS allowlist enforced at the app level (NOETARCH_CORS_ALLOW_ORIGINS).
   - No external egress; all data is in-process seed.
 """
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
 
+from noetarch.core.database import get_session
 from noetarch.modules.guided_review.repository import GuidedReviewRepository
 from noetarch.modules.guided_review.schemas import GuidedReviewData
 from noetarch.modules.guided_review.service import GuidedReviewService
 
 router = APIRouter(tags=["guided-review"])
 
-_service = GuidedReviewService(GuidedReviewRepository())
-
 
 @router.get("", response_model=GuidedReviewData)
-def get_review() -> GuidedReviewData:
+def get_review(session: Session = Depends(get_session)) -> GuidedReviewData:
     """Return the current guided-review state (paper, progress, reasons, history)."""
-    return _service.get_review()
+    return GuidedReviewService(GuidedReviewRepository(session)).get_review()

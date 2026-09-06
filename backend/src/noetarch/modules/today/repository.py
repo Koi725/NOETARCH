@@ -1,8 +1,28 @@
-"""In-process Today repository. No database, no network, no file I/O."""
+"""Today repository — DB-backed (SQLAlchemy), maps the ORM snapshot to the Pydantic schema."""
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
+from noetarch.modules.today.infrastructure.models import TodaySnapshotORM
 from noetarch.modules.today.schemas import TodayData
-from noetarch.modules.today.seed import SEED_TODAY
 
 
 class TodayRepository:
+    def __init__(self, session: Session) -> None:
+        self._session = session
+
     def get(self) -> TodayData:
-        return SEED_TODAY
+        row = self._session.execute(
+            select(TodaySnapshotORM).order_by(TodaySnapshotORM.id).limit(1)
+        ).scalar_one()
+        return TodayData.model_validate(
+            {
+                "project": row.project,
+                "question": row.question,
+                "waiting": row.waiting,
+                "run": row.run,
+                "failure": row.failure,
+                "finished": row.finished,
+                "sources": row.sources,
+                "files": row.files,
+            }
+        )
