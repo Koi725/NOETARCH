@@ -1,8 +1,8 @@
 # NOETARCH Status
 
 **Updated:** 2026-09-06
-**Phase:** Governance, communication verification, and completed frontend M0-M2 foundation
-**Product development:** M0-M2 frontend foundation complete; M3, backend integration, real API calls, and product-domain implementation are blocked
+**Phase:** Governance, communication verification, and completed frontend M0-M3
+**Product development:** M0-M3 frontend complete; backend integration, real API calls, and product-domain implementation are blocked
 
 ## Current state
 
@@ -14,10 +14,9 @@
 - Headless dual-mode worker test: BLOCKED — test fixture and procedure prepared, not executed.
 - Background processes: none reported by Ruflo after audit cleanup.
 - Frontend authorization history: M0 and M1 were initially authorized. M2 work crossed the intended M1 stop and was identified by the recovery audit. After reviewing that audit, the CEO authorized M2 completion and remediation prospectively; this was not retroactive authorization.
-- Frontend phase: COMPLETE through M2 only — surviving handoff sources are hashed, the exact-pinned foundation and shared design system are validated, and the application shell exposes a visibly disclosed mock-only Today surface.
-- Frontend validation: lint, strict type-check, 6 files/19 tests, production build, dependency-tree resolution, desktop Obsidian/Daylight, tablet, mobile, keyboard focus, reduced motion, 200% zoom equivalent, overflow, and computed contrast checks pass. Evidence is recorded in `docs/frontend/M2_ACCESSIBILITY.md` and `docs/frontend/evidence/m2/`.
+- Frontend phase: COMPLETE through M3 — all ten App Router routes implemented with nine new screen components and typed mock data; root `/` redirects to `/today`; all navigation items are real links.
+- Frontend validation: lint 0 errors, strict type-check 0 errors, 7 files/37 tests, 11-route production build, `git diff --check` pass, no new dependencies. M2 Chromium evidence in `docs/frontend/evidence/m2/`. M3 static-analysis evidence in `docs/frontend/evidence/m3/qa-results.json`. Implementation record in `docs/frontend/M3_IMPLEMENTATION.md`.
 - M0 source limitation: the requested `design_handoff_report` directory and the fallback README are absent; four surviving canonical sources are recorded with SHA-256 hashes and no missing content was recreated.
-- M3 boundary: BLOCKED — future destinations remain unavailable and must not be implemented as fake pages.
 - Backend boundary: protected and untouched by the M2 remediation; no frontend/backend integration is authorized.
 
 ## Pending approvals
