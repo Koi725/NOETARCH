@@ -1,0 +1,295 @@
+"use client";
+
+import { useState, useMemo, useId, useCallback } from "react";
+import { evidenceRecords, evidenceLibraryProject } from "@/data/EvidenceLibrary/EvidenceLibrary-data";
+import type {
+  EvidenceRecord,
+  EvidenceFilter,
+  EvidenceSource,
+} from "./EvidenceLibrary_types";
+import "@/tailwind/components/EvidenceLibrary/EvidenceLibrary.css";
+
+const FILTERS: { value: EvidenceFilter; label: string }[] = [
+  { value: "all", label: "All" },
+  { value: "checked", label: "Checked" },
+  { value: "conflicting", label: "Conflicting" },
+  { value: "cannot-check", label: "Cannot check" },
+  { value: "missing-doi", label: "Missing DOI" },
+];
+
+function statusLabel(status: EvidenceRecord["status"]): string {
+  if (status === "checked") return "Checked";
+  if (status === "conflicting") return "Conflicting";
+  return "Cannot check";
+}
+
+function SourceIcon({ name }: { name: string }) {
+  const initial = name.charAt(0).toUpperCase();
+  return (
+    <span className="no-ev-source-icon" aria-label={name} title={name}>
+      {initial}
+    </span>
+  );
+}
+
+function StatusBadge({ status }: { status: EvidenceRecord["status"] }) {
+  return (
+    <span className={`no-ev-status-badge is-${status}`} aria-label={`Status: ${statusLabel(status)}`}>
+      {statusLabel(status)}
+    </span>
+  );
+}
+
+function SourceTable({ sources }: { sources: EvidenceSource[] }) {
+  if (sources.length === 0) {
+    return (
+      <p className="no-ev-no-sources">No external sources checked — no DOI available.</p>
+    );
+  }
+  return (
+    <table className="no-ev-source-table">
+      <caption className="sr-only">Source verification results</caption>
+      <thead>
+        <tr>
+          <th scope="col">Source</th>
+          <th scope="col">Found</th>
+          <th scope="col">Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        {sources.map((src) => (
+          <tr key={src.name}>
+            <td>{src.name}</td>
+            <td>
+              <span className={`no-ev-found-badge is-${src.found ? "yes" : "no"}`}>
+                {src.found ? "Yes" : "No"}
+              </span>
+            </td>
+            <td>{src.note}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
+function DetailInspector({
+  record,
+  onClose,
+}: {
+  record: EvidenceRecord;
+  onClose: () => void;
+}) {
+  return (
+    <aside className="no-ev-inspector" aria-label="Record detail inspector">
+      <div className="no-ev-inspector-header">
+        <h2 className="no-ev-inspector-title">{record.title}</h2>
+        <button
+          type="button"
+          className="no-ev-close-btn"
+          onClick={onClose}
+          aria-label="Close detail inspector"
+        >
+          ✕
+        </button>
+      </div>
+
+      <div className="no-ev-inspector-body">
+        <StatusBadge status={record.status} />
+        {record.conflictNote && (
+          <p className="no-ev-conflict-note">{record.conflictNote}</p>
+        )}
+        {record.missingDoi && (
+          <p className="no-ev-missing-doi-note">No DOI — cannot verify against external sources.</p>
+        )}
+
+        <dl className="no-ev-detail-grid">
+          <dt>Authors</dt>
+          <dd>{record.authors}</dd>
+          <dt>Year</dt>
+          <dd>{record.year}</dd>
+          <dt>Journal</dt>
+          <dd>{record.journal}</dd>
+          <dt>DOI</dt>
+          <dd>
+            {record.doi ? (
+              <span className="no-ev-doi-value">{record.doi}</span>
+            ) : (
+              <span className="no-ev-doi-missing">Not available</span>
+            )}
+          </dd>
+          {record.totalSources > 0 && (
+            <>
+              <dt>Agreement</dt>
+              <dd>
+                {record.agreementCount} of {record.totalSources} sources agree
+              </dd>
+            </>
+          )}
+        </dl>
+
+        <section aria-labelledby="source-table-heading">
+          <h3 id="source-table-heading" className="no-ev-section-label">
+            Source verification
+          </h3>
+          <SourceTable sources={record.sources} />
+        </section>
+
+        <section aria-labelledby="provenance-heading">
+          <h3 id="provenance-heading" className="no-ev-section-label">
+            Provenance trail
+          </h3>
+          <ol className="no-ev-provenance">
+            {record.provenance.map((step, i) => (
+              <li key={i}>{step}</li>
+            ))}
+          </ol>
+        </section>
+      </div>
+    </aside>
+  );
+}
+
+export function EvidenceLibrary() {
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState<EvidenceFilter>("all");
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const searchId = useId();
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return evidenceRecords.filter((r) => {
+      const matchesFilter =
+        filter === "all" ||
+        (filter === "missing-doi" ? r.missingDoi === true : r.status === filter);
+      const matchesSearch =
+        q === "" ||
+        r.title.toLowerCase().includes(q) ||
+        r.authors.toLowerCase().includes(q) ||
+        r.journal.toLowerCase().includes(q) ||
+        (r.doi ?? "").toLowerCase().includes(q);
+      return matchesFilter && matchesSearch;
+    });
+  }, [search, filter]);
+
+  const selected = useMemo(
+    () => (selectedId ? evidenceRecords.find((r) => r.id === selectedId) ?? null : null),
+    [selectedId]
+  );
+
+  const handleSelect = useCallback(
+    (id: string) => {
+      setSelectedId((prev) => (prev === id ? null : id));
+    },
+    []
+  );
+
+  const handleClose = useCallback(() => setSelectedId(null), []);
+
+  return (
+    <div className="no-ev-page">
+      {/* Header */}
+      <div className="no-ev-header">
+        <div className="no-ev-header-top">
+          <div>
+            <div className="no-eyebrow no-ev-eyebrow">Evidence library · {evidenceLibraryProject}</div>
+            <h1 className="no-ev-page-title">Evidence records</h1>
+          </div>
+          <div className="no-prototype-notice no-ev-proto" role="note">
+            Prototype · Mock data
+          </div>
+        </div>
+
+        <div className="no-ev-search-row">
+          <label htmlFor={searchId} className="sr-only">
+            Search records
+          </label>
+          <input
+            id={searchId}
+            type="search"
+            className="no-ev-search"
+            placeholder="Search by title, author, journal, or DOI…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            aria-label="Search evidence records"
+          />
+        </div>
+
+        <div className="no-ev-filter-chips" role="group" aria-label="Filter records">
+          {FILTERS.map((f) => (
+            <button
+              key={f.value}
+              type="button"
+              className={`no-ev-chip${filter === f.value ? " is-active" : ""}`}
+              onClick={() => setFilter(f.value)}
+              aria-pressed={filter === f.value}
+              aria-label={`Filter: ${f.label}`}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Body */}
+      <div className={`no-ev-body${selected ? " has-inspector" : ""}`}>
+        {/* Record list */}
+        <div className="no-ev-list-col" role="region" aria-label="Evidence records list">
+          <div
+            className="no-ev-count"
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            {filtered.length} record{filtered.length !== 1 ? "s" : ""}
+            {filter !== "all" || search ? " (filtered)" : ""}
+          </div>
+          {filtered.length === 0 ? (
+            <p className="no-ev-empty">No records match the current filter.</p>
+          ) : (
+            <ul className="no-ev-record-list" aria-label="Evidence records">
+              {filtered.map((rec) => {
+                const isSelected = rec.id === selectedId;
+                return (
+                  <li key={rec.id}>
+                    <button
+                      type="button"
+                      className={`no-ev-record-row${isSelected ? " is-selected" : ""}`}
+                      onClick={() => handleSelect(rec.id)}
+                      aria-pressed={isSelected}
+                      aria-expanded={isSelected}
+                      aria-label={`${rec.title} — ${statusLabel(rec.status)}`}
+                    >
+                      <div className="no-ev-row-main">
+                        <div className="no-ev-row-title">{rec.title}</div>
+                        <div className="no-ev-row-meta">
+                          {rec.year} · {rec.journal}
+                        </div>
+                      </div>
+                      <div className="no-ev-row-right">
+                        <StatusBadge status={rec.status} />
+                        <div className="no-ev-source-icons" aria-label="Sources checked">
+                          {rec.sources.map((s) => (
+                            <SourceIcon key={s.name} name={s.name} />
+                          ))}
+                          {rec.sources.length === 0 && (
+                            <span className="no-ev-no-source-icon" aria-label="No sources">—</span>
+                          )}
+                        </div>
+                      </div>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+
+        {/* Detail inspector */}
+        {selected && (
+          <DetailInspector record={selected} onClose={handleClose} />
+        )}
+      </div>
+    </div>
+  );
+}
