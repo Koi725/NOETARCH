@@ -1,10 +1,5 @@
-import { ApplicationShell } from "@/components/ApplicationShell";
-import { ThemeProvider } from "@/components/ThemeProvider";
+import { redirect } from "next/navigation";
 
-export default function Page() {
-  return (
-    <ThemeProvider>
-      <ApplicationShell />
-    </ThemeProvider>
-  );
+export default function RootPage() {
+  redirect("/today");
 }
