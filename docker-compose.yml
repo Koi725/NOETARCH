@@ -1,0 +1,29 @@
+# One-command startup: `docker compose up` brings up the backend (auto-migrate + seed) and
+# the frontend, pre-wired. CORS is set to the frontend origin and NEXT_PUBLIC_API_BASE to the
+# backend, so the app connects with zero manual env editing.
+#
+# Toggle external sources (OpenAlex): NOETARCH_EXTERNAL_SOURCES_ENABLED=true docker compose up
+services:
+  backend:
+    build: ./backend
+    environment:
+      NOETARCH_CORS_ALLOW_ORIGINS: "http://localhost:3000"
+      NOETARCH_DATABASE_URL: "sqlite:////data/noetarch.db"
+      NOETARCH_EXTERNAL_SOURCES_ENABLED: "${NOETARCH_EXTERNAL_SOURCES_ENABLED:-false}"
+      NOETARCH_EGRESS_CONTACT_EMAIL: "${NOETARCH_EGRESS_CONTACT_EMAIL:-}"
+    volumes:
+      - noetarch-db:/data
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build: ./frontend
+    environment:
+      NEXT_PUBLIC_API_BASE: "http://localhost:8000"
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  noetarch-db:
