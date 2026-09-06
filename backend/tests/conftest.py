@@ -11,6 +11,7 @@ import tempfile
 from collections.abc import Iterator
 
 import pytest
+from fastapi.testclient import TestClient
 from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import Session
 
@@ -18,6 +19,15 @@ from noetarch.core.database import Base, get_session
 from noetarch.database import registry
 from noetarch.database.seeding import seed_all
 from noetarch.main import app
+
+
+def _seeded_engine(path: str) -> Engine:
+    registry.import_all_models()
+    engine = create_engine(f"sqlite:///{path}", connect_args={"check_same_thread": False})
+    Base.metadata.create_all(engine)
+    with Session(engine) as session:
+        seed_all(session)
+    return engine
 
 
 @pytest.fixture(scope="session")
@@ -53,3 +63,50 @@ def _override_get_session(db_engine: Engine) -> Iterator[None]:
 def db_session(db_engine: Engine) -> Iterator[Session]:
     with Session(db_engine) as session:
         yield session
+
+
+# ─── Isolated, mutable database for write (M8) tests ─────────────────────────
+# Mutation tests must not pollute the shared read DB used by parity/read tests,
+# so each gets its own freshly-seeded database.
+
+
+@pytest.fixture
+def fresh_db_engine() -> Iterator[Engine]:
+    fd, path = tempfile.mkstemp(suffix=".db")
+    os.close(fd)
+    engine = _seeded_engine(path)
+    try:
+        yield engine
+    finally:
+        engine.dispose()
+        os.unlink(path)
+
+
+@pytest.fixture
+def fresh_db_session(fresh_db_engine: Engine) -> Iterator[Session]:
+    with Session(fresh_db_engine) as session:
+        yield session
+
+
+@pytest.fixture
+def write_client(fresh_db_engine: Engine, db_engine: Engine) -> Iterator[TestClient]:
+    """A TestClient whose get_session points at an isolated, freshly-seeded DB.
+
+    On teardown the dependency is restored to the shared read DB so later tests are
+    unaffected. The overrides are generator functions (FastAPI's yield-dependency
+    protocol), not lambdas that merely return a generator.
+    """
+
+    def _fresh_session() -> Iterator[Session]:
+        with Session(fresh_db_engine) as session:
+            yield session
+
+    def _shared_session() -> Iterator[Session]:
+        with Session(db_engine) as session:
+            yield session
+
+    app.dependency_overrides[get_session] = _fresh_session
+    try:
+        yield TestClient(app)
+    finally:
+        app.dependency_overrides[get_session] = _shared_session
