@@ -6,7 +6,7 @@ import { useShell } from "@/components/ApplicationShell";
 import { useTheme } from "@/components/ThemeProvider";
 import { fetchTodayData } from "@/services/TodayService";
 import type { TodayData } from "@/contracts/today";
-import { useScreenTour, TODAY_TOUR_KEY, TODAY_TOUR_STEPS } from "@/components/ui";
+import { useScreenTour, TodaySkeleton, TODAY_TOUR_KEY, TODAY_TOUR_STEPS } from "@/components/ui";
 import "@/tailwind/components/TodayOverview/TodayOverview.css";
 
 type ComingSoonActionProps = {
@@ -60,7 +60,7 @@ export function TodayOverview() {
   if (!todayData) {
     return (
       <div className="no-today-page" role="status" aria-label="Loading today's workspace">
-        <p className="no-today-loading">Loading your workspace…</p>
+        <TodaySkeleton />
       </div>
     );
   }
@@ -135,7 +135,7 @@ export function TodayOverview() {
           </section>
 
           <section className="no-today-lower-grid" aria-label="Recent status">
-            <article className="no-failure-card">
+            <article id="today-failure" className="no-failure-card">
               <div className="no-card-kicker">One source failed</div>
               <div className="no-failure-body">
                 <h3>{todayData.failure.title}</h3>
@@ -165,13 +165,13 @@ export function TodayOverview() {
           </section>
 
           <section>
-            <div className="no-aside-heading">Files made today</div>
+            <div className="no-aside-heading" id="today-files">Files made today</div>
             <div className="no-file-list">
               {todayData.files.map(([name, meta, pending]) => <div className={`no-file-row${pending ? " is-pending" : ""}`} key={name}><div>{name}</div><span>{meta}</span></div>)}
             </div>
           </section>
 
-          <section className="no-data-location">
+          <section id="today-data-location" className="no-data-location">
             <div className="no-aside-heading">Where your data is</div>
             <p>Everything stays in <span>~/NOETARCH/i5-0-review</span>. The only thing that ever leaves is what you approve at step 6.</p>
             <Link className="no-secondary-button" href="/models-policy">Change what&apos;s allowed</Link>
