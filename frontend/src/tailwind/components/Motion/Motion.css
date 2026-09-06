@@ -1,0 +1,51 @@
+/* Tasteful, subtle motion. Everything here is a transition/animation, so it is fully
+   removed by the global gate ([data-anim="off"] and prefers-reduced-motion in motion.css)
+   — zero animation when motion is off. */
+
+/* Interactive lift on cards, rows, and primary/secondary buttons. */
+.no-decision-card,
+.no-ev-record-row,
+.no-run-row,
+.no-recipe-card,
+.no-policy-provider,
+.no-finished-card,
+.no-failure-card {
+  transition: transform 130ms ease, box-shadow 130ms ease, border-color 130ms ease;
+}
+
+.no-ev-record-row:hover,
+.no-run-row:hover,
+.no-recipe-card:hover {
+  transform: translateY(-1px);
+}
+
+.no-primary-button,
+.no-secondary-button,
+.no-warn-button {
+  transition: transform 120ms ease, background-color 120ms ease, border-color 120ms ease;
+}
+
+.no-primary-button:hover,
+.no-secondary-button:hover,
+.no-warn-button:hover {
+  transform: translateY(-1px);
+}
+
+.no-primary-button:active,
+.no-secondary-button:active,
+.no-warn-button:active {
+  transform: translateY(0);
+}
+
+/* Status badges ease their color/opacity when they change. */
+.no-ev-status-badge,
+.no-decision-badge,
+.no-policy-status-badge,
+.no-run-status-icon {
+  transition: background-color 160ms ease, color 160ms ease, opacity 160ms ease;
+}
+
+/* Section enter — a gentle rise applied to page roots (opt-in via class). */
+.no-section-enter {
+  animation: noRise 260ms ease both;
+}
