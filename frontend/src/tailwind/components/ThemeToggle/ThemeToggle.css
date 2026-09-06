@@ -1,0 +1,36 @@
+.theme-toggle {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border: 1px solid var(--btnline);
+}
+
+.theme-toggle__option {
+  min-height: 34px;
+  border: 0;
+  background: transparent;
+  color: var(--ink2);
+  cursor: pointer;
+  padding: 8px 6px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: .08em;
+  text-align: center;
+  text-transform: uppercase;
+  transition: border-color 160ms ease, background-color 160ms ease, color 160ms ease;
+}
+
+.theme-toggle__option + .theme-toggle__option {
+  border-left: 1px solid var(--btnline);
+}
+
+.theme-toggle__option:hover,
+.theme-toggle__option[aria-pressed="true"] {
+  background: var(--hover);
+  color: var(--ink);
+}
+
+.theme-toggle__option:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
