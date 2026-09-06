@@ -1,16 +1,13 @@
 "use client";
 
-import { useState, useMemo, useId, useCallback } from "react";
-import { mockEvidenceService } from "@/services/EvidenceService";
+import { useState, useEffect, useMemo, useId, useCallback } from "react";
+import { fetchEvidenceData } from "@/services/EvidenceService";
 import type {
   EvidenceRecord,
   EvidenceFilter,
   EvidenceSource,
 } from "./EvidenceLibrary_types";
 import "@/tailwind/components/EvidenceLibrary/EvidenceLibrary.css";
-
-const evidenceRecords = mockEvidenceService.getEvidenceRecords();
-const evidenceLibraryProject = mockEvidenceService.getProjectName();
 
 const FILTERS: { value: EvidenceFilter; label: string }[] = [
   { value: "all", label: "All" },
@@ -154,14 +151,41 @@ function DetailInspector({
 }
 
 export function EvidenceLibrary() {
+  const [records, setRecords] = useState<EvidenceRecord[]>([]);
+  const [project, setProject] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<EvidenceFilter>("all");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const searchId = useId();
 
+  useEffect(() => {
+    let cancelled = false;
+    fetchEvidenceData()
+      .then((data) => {
+        if (!cancelled) {
+          setRecords(data.records);
+          setProject(data.project);
+          setLoading(false);
+        }
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          setError(
+            err instanceof Error ? err.message : "Failed to load evidence records."
+          );
+          setLoading(false);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return evidenceRecords.filter((r) => {
+    return records.filter((r) => {
       const matchesFilter =
         filter === "all" ||
         (filter === "missing-doi" ? r.missingDoi === true : r.status === filter);
@@ -173,11 +197,11 @@ export function EvidenceLibrary() {
         (r.doi ?? "").toLowerCase().includes(q);
       return matchesFilter && matchesSearch;
     });
-  }, [search, filter]);
+  }, [records, search, filter]);
 
   const selected = useMemo(
-    () => (selectedId ? evidenceRecords.find((r) => r.id === selectedId) ?? null : null),
-    [selectedId]
+    () => (selectedId ? records.find((r) => r.id === selectedId) ?? null : null),
+    [selectedId, records]
   );
 
   const handleSelect = useCallback(
@@ -189,13 +213,31 @@ export function EvidenceLibrary() {
 
   const handleClose = useCallback(() => setSelectedId(null), []);
 
+  if (loading) {
+    return (
+      <div className="no-ev-page" role="status" aria-label="Loading evidence records">
+        <p className="no-ev-loading">Loading evidence records…</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="no-ev-page">
+        <div role="alert" className="no-ev-error">
+          <p>{error}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="no-ev-page">
       {/* Header */}
       <div className="no-ev-header">
         <div className="no-ev-header-top">
           <div>
-            <div className="no-eyebrow no-ev-eyebrow">Evidence library · {evidenceLibraryProject}</div>
+            <div className="no-eyebrow no-ev-eyebrow">Evidence library · {project}</div>
             <h1 className="no-ev-page-title">Evidence records</h1>
           </div>
           <div className="no-prototype-notice no-ev-proto" role="note">
