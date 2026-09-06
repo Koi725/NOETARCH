@@ -1,3 +1,1 @@
-export type TodayOverviewProps = {
-  onOpenPalette: () => void;
-};
+export type TodayOverviewProps = Record<string, never>;

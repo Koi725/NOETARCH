@@ -1,8 +1,9 @@
 "use client";
 
+import Link from "next/link";
+import { useShell } from "@/components/ApplicationShell";
 import { useTheme } from "@/components/ThemeProvider";
 import { todayData } from "@/data/TodayOverview/TodayOverview-data";
-import type { TodayOverviewProps } from "./TodayOverview_types";
 import "@/tailwind/components/TodayOverview/TodayOverview.css";
 
 type ComingSoonActionProps = {
@@ -20,8 +21,9 @@ function ComingSoonAction({ children, className, label }: ComingSoonActionProps)
   );
 }
 
-export function TodayOverview({ onOpenPalette }: TodayOverviewProps) {
+export function TodayOverview() {
   const { plain } = useTheme();
+  const { openPalette } = useShell();
 
   return (
     <div className="no-today-page">
@@ -33,8 +35,8 @@ export function TodayOverview({ onOpenPalette }: TodayOverviewProps) {
           <div className="no-prototype-notice" role="note">Prototype · Mock data</div>
         </div>
         <div className="no-today-actions">
-          <ComingSoonAction className="no-primary-button" label="Start a review">Start a review</ComingSoonAction>
-          <button className="no-secondary-button" type="button" onClick={onOpenPalette}>⌘K</button>
+          <Link className="no-primary-button" href="/guided-review">Start a review</Link>
+          <button className="no-secondary-button" type="button" onClick={openPalette}>⌘K</button>
         </div>
       </header>
 
@@ -60,8 +62,8 @@ export function TodayOverview({ onOpenPalette }: TodayOverviewProps) {
                   <p>{todayData.waiting.detail}</p>
                 </div>
                 <div className="no-card-actions">
-                  <ComingSoonAction className="no-secondary-button" label="Look closer">Look closer</ComingSoonAction>
-                  <ComingSoonAction className="no-warn-button" label="Decide">Decide</ComingSoonAction>
+                  <Link className="no-secondary-button" href="/decisions">Look closer</Link>
+                  <Link className="no-warn-button" href="/decisions">Decide</Link>
                 </div>
               </div>
               <div className="no-card-footer">Also waiting: <span>{todayData.waiting.next}</span> · stays on device · $0.00</div>
@@ -73,9 +75,8 @@ export function TodayOverview({ onOpenPalette }: TodayOverviewProps) {
               <span className="no-section-status no-section-status-live" aria-hidden="true" />
               <h2 id="happening-heading">Happening now</h2>
             </div>
-            <button className="no-run-card" type="button" disabled aria-label="Watch the live literature run — coming soon">
+            <Link className="no-run-card" href="/live-run" aria-label="Watch the active literature run">
               <div className="no-run-main">
-                <div className="no-run-availability">Coming soon</div>
                 <h3>{todayData.run.title}</h3>
                 <div className="no-run-meta">{todayData.run.meta}</div>
                 <div className="no-run-current"><span>Step 5 of 9</span> · removing duplicate papers</div>
@@ -90,7 +91,7 @@ export function TodayOverview({ onOpenPalette }: TodayOverviewProps) {
               <div className="no-run-kpis">
                 {todayData.run.kpis.map(([label, value, tone]) => <div className="no-kpi" key={label}><div className="no-kpi-label">{label}</div><div className={`no-kpi-value${tone ? ` is-${tone}` : ""}`}>{value}</div></div>)}
               </div>
-            </button>
+            </Link>
           </section>
 
           <section className="no-today-lower-grid" aria-label="Recent status">
@@ -101,7 +102,7 @@ export function TodayOverview({ onOpenPalette }: TodayOverviewProps) {
                 <p>{todayData.failure.body}</p>
                 <div className="no-card-actions">
                   <ComingSoonAction className="no-secondary-button" label="Try that step again">Try that step again</ComingSoonAction>
-                  <ComingSoonAction className="no-secondary-button" label="See where it stopped">See where it stopped</ComingSoonAction>
+                  <Link className="no-secondary-button" href="/history">See where it stopped</Link>
                 </div>
               </div>
             </article>
@@ -120,7 +121,7 @@ export function TodayOverview({ onOpenPalette }: TodayOverviewProps) {
             <div className="no-source-stack">
               {todayData.sources.map(([name, state, tone]) => <div className="no-source-row" key={name}><span className={`no-status-dot no-status-${tone}`} aria-hidden="true" /><span>{name}</span><span className={`no-source-state is-${tone}`}>{state}</span></div>)}
             </div>
-            <p className="no-aside-note">Semantic Scholar has been unavailable for 11 minutes. Runs that need it wait in line — they don’t fail.</p>
+            <p className="no-aside-note">Semantic Scholar has been unavailable for 11 minutes. Runs that need it wait in line — they don&apos;t fail.</p>
           </section>
 
           <section>
@@ -133,7 +134,7 @@ export function TodayOverview({ onOpenPalette }: TodayOverviewProps) {
           <section className="no-data-location">
             <div className="no-aside-heading">Where your data is</div>
             <p>Everything stays in <span>~/NOETARCH/i5-0-review</span>. The only thing that ever leaves is what you approve at step 6.</p>
-            <ComingSoonAction className="no-secondary-button" label="Change what’s allowed">Change what’s allowed</ComingSoonAction>
+            <Link className="no-secondary-button" href="/models-policy">Change what&apos;s allowed</Link>
           </section>
         </aside>
       </div>
