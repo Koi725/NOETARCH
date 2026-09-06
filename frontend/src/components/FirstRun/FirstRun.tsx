@@ -1,8 +1,12 @@
 "use client";
 
 import { useState, useId } from "react";
-import {
-  firstRunSteps,
+import { mockFirstRunService } from "@/services/FirstRunService";
+import type { FirstRunFormState, StepNumber } from "./FirstRun_types";
+
+const {
+  stepCount: STEP_COUNT,
+  steps: firstRunSteps,
   workspaceDefaults,
   researchQuestionDefaults,
   sourceOptions,
@@ -13,9 +17,7 @@ import {
   egressOptions,
   egressDefault,
   egressNote,
-  STEP_COUNT,
-} from "@/data/FirstRun/FirstRun-data";
-import type { FirstRunFormState, StepNumber } from "./FirstRun_types";
+} = mockFirstRunService.getOnboardingConfig();
 import "@/tailwind/components/FirstRun/FirstRun.css";
 
 const INITIAL_STATE: FirstRunFormState = {

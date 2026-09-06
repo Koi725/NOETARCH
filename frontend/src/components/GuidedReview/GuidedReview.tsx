@@ -1,20 +1,22 @@
 "use client";
 
 import { useState, useCallback, useEffect, useId } from "react";
-import {
-  guidedReviewProject,
-  reviewProgress,
-  currentPaper,
-  nextPapers,
-  excludeReasons,
-  previousDecisions,
-} from "@/data/GuidedReview/GuidedReview-data";
+import { mockGuidedReviewService } from "@/services/GuidedReviewService";
 import type {
   Decision,
   HistoryEntry,
   ReviewPaper,
 } from "./GuidedReview_types";
 import "@/tailwind/components/GuidedReview/GuidedReview.css";
+
+const {
+  project: guidedReviewProject,
+  progress: reviewProgress,
+  currentPaper,
+  nextPapers,
+  excludeReasons,
+  previousDecisions,
+} = mockGuidedReviewService.getReviewData();
 
 function decisionLabel(d: Exclude<Decision, null>): string {
   if (d === "include") return "Include";

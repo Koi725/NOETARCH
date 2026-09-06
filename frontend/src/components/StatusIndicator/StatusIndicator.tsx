@@ -1,5 +1,15 @@
-import { STATUS_LABELS } from "@/data/StatusIndicator/StatusIndicator-data";
 import type { StatusIndicatorProps } from "./StatusIndicator_types";
+
+const STATUS_LABELS = {
+  live: "Live",
+  pending: "Needs a decision",
+  verified: "Verified",
+  complete: "Complete",
+  failed: "Failed",
+  warning: "Needs attention",
+  unverified: "Not checked by us",
+  idle: "Not started",
+} as const;
 
 export function StatusIndicator({ status, label, live = false, className, ...props }: StatusIndicatorProps) {
   const classes = ["status-indicator", `status-indicator--${status}`, className]

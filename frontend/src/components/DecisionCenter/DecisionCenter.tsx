@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useId } from "react";
-import { decisions as defaultDecisions } from "@/data/DecisionCenter/DecisionCenter-data";
+import { mockDecisionService } from "@/services/DecisionService";
 import type {
   Decision,
   DecisionCenterProps,
@@ -163,11 +163,12 @@ function DecisionCard({
   );
 }
 
-export function DecisionCenter({ decisions = defaultDecisions }: DecisionCenterProps) {
+export function DecisionCenter({ decisions }: DecisionCenterProps) {
+  const effectiveDecisions = decisions ?? mockDecisionService.getDecisions();
   const [cardStates, setCardStates] = useState<Record<string, CardState>>(
     () =>
       Object.fromEntries(
-        decisions.map((d) => [
+        effectiveDecisions.map((d) => [
           d.id,
           { sessionStatus: null, chosenAlternativeIndex: null },
         ])
@@ -180,12 +181,12 @@ export function DecisionCenter({ decisions = defaultDecisions }: DecisionCenterP
       [id]: { ...prev[id], ...patch } as CardState,
     }) as Record<string, CardState>);
 
-  const pending = decisions.filter(
+  const pending = effectiveDecisions.filter(
     (d) =>
       d.status === "pending" ||
       (d.status !== "rejected" && cardStates[d.id]?.sessionStatus !== "rejected")
   );
-  const preRejected = decisions.filter(
+  const preRejected = effectiveDecisions.filter(
     (d) => d.status === "rejected" && cardStates[d.id]?.sessionStatus === null
   );
 

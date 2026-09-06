@@ -2,8 +2,10 @@
 
 import { useEffect, useRef } from "react";
 import { useTheme } from "@/components/ThemeProvider";
-import { paletteItems } from "@/data/CommandPalette/CommandPalette-data";
+import { mockShellService } from "@/services/ShellService";
 import type { CommandPaletteProps } from "./CommandPalette_types";
+
+const { paletteItems } = mockShellService.getShellConfig();
 import "@/tailwind/components/CommandPalette/CommandPalette.css";
 
 export function CommandPalette({ open, onClose, onNavigate }: CommandPaletteProps) {

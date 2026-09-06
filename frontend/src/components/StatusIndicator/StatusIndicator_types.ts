@@ -1,5 +1,6 @@
 import type { HTMLAttributes } from "react";
-import type { StatusKind } from "@/data/StatusIndicator/StatusIndicator-data";
+
+export type StatusKind = "live" | "pending" | "verified" | "complete" | "failed" | "warning" | "unverified" | "idle";
 
 export type StatusIndicatorProps = Omit<HTMLAttributes<HTMLDivElement>, "children"> & {
   status: StatusKind;

@@ -1,5 +1,7 @@
 import type { ButtonHTMLAttributes } from "react";
-import type { ButtonSize, ButtonVariant } from "@/data/Button/Button-data";
+
+export type ButtonVariant = "primary" | "secondary" | "danger";
+export type ButtonSize = "small" | "medium";
 
 export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: ButtonVariant;

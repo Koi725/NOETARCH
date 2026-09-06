@@ -1,6 +1,5 @@
-import type { PolicyProvider, RoutingPreference } from "@/data/ModelsPolicy/ModelsPolicy-data";
-
-export type { PolicyProvider, RoutingPreference };
+import type { RoutingPreference } from "@/contracts/models-policy";
+export type { PolicyProvider, RoutingPreference } from "@/contracts/models-policy";
 
 export type ModelsPolicyProps = Record<string, never>;
 

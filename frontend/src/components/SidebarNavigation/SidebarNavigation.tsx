@@ -3,9 +3,10 @@
 import Link from "next/link";
 import { useTheme } from "@/components/ThemeProvider";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { applicationMeta } from "@/data/ApplicationShell/ApplicationShell-data";
-import { navigationGroups, themeNote } from "@/data/SidebarNavigation/SidebarNavigation-data";
+import { mockShellService } from "@/services/ShellService";
 import type { SidebarNavigationProps } from "./SidebarNavigation_types";
+
+const { applicationMeta, navigationGroups, themeNote } = mockShellService.getShellConfig();
 import "@/tailwind/components/SidebarNavigation/SidebarNavigation.css";
 
 function isCurrentPath(currentPath: string, href: string) {

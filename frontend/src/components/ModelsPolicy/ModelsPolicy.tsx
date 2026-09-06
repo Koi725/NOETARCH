@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useCallback, useId } from "react";
-import {
-  modelsPolicyData,
-  ROUTING_OPTIONS,
-  ROUTING_PREFERENCE_LABELS,
-} from "@/data/ModelsPolicy/ModelsPolicy-data";
+import { mockModelsPolicyService } from "@/services/ModelsPolicyService";
 import type { PolicyProvider, ProviderState, ProviderStateMap } from "./ModelsPolicy_types";
+
+const modelsPolicyData = mockModelsPolicyService.getProviders();
+const ROUTING_OPTIONS = mockModelsPolicyService.getRoutingOptions();
+const ROUTING_PREFERENCE_LABELS = mockModelsPolicyService.getRoutingPreferenceLabels();
 import "@/tailwind/components/ModelsPolicy/ModelsPolicy.css";
 
 function buildInitialState(providers: PolicyProvider[]): ProviderStateMap {

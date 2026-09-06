@@ -1,8 +1,12 @@
 "use client";
 
 import { useTheme } from "@/components/ThemeProvider";
-import { THEME_LABELS } from "@/data/ThemeToggle/ThemeToggle-data";
 import type { ThemeToggleProps } from "./ThemeToggle_types";
+
+const THEME_LABELS = {
+  night: "Obsidian",
+  day: "Daylight",
+} as const;
 
 export function ThemeToggle({ className }: ThemeToggleProps) {
   const { mode, setMode } = useTheme();

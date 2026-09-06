@@ -3,8 +3,10 @@
 import Link from "next/link";
 import { useShell } from "@/components/ApplicationShell";
 import { useTheme } from "@/components/ThemeProvider";
-import { todayData } from "@/data/TodayOverview/TodayOverview-data";
+import { mockTodayService } from "@/services/TodayService";
 import "@/tailwind/components/TodayOverview/TodayOverview.css";
+
+const todayData = mockTodayService.getTodayData();
 
 type ComingSoonActionProps = {
   children: React.ReactNode;

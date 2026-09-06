@@ -1,5 +1,7 @@
-import type { GalleryStateEntry } from "@/data/StateGallery/StateGallery-data";
-
-export type { GalleryStateEntry };
+export interface GalleryStateEntry {
+  id: string;
+  title: string;
+  description: string;
+}
 
 export type StateGalleryProps = Record<string, never>;

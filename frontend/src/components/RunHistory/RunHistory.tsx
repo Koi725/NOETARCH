@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useId } from "react";
-import { runs as defaultRuns } from "@/data/RunHistory/RunHistory-data";
+import { mockHistoryService } from "@/services/HistoryService";
 import type {
   Run,
   RunHistoryProps,
@@ -227,11 +227,12 @@ function RunRow({
   );
 }
 
-export function RunHistory({ runs = defaultRuns }: RunHistoryProps) {
+export function RunHistory({ runs }: RunHistoryProps) {
+  const effectiveRuns = runs ?? mockHistoryService.getRuns();
   const [activeFilter, setActiveFilter] = useState<FilterTab>("all");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
-  const filtered = runs.filter((r) => matchesFilter(r, activeFilter));
+  const filtered = effectiveRuns.filter((r) => matchesFilter(r, activeFilter));
 
   const toggleSelect = (id: string) => {
     setSelectedIds((prev) => {
@@ -244,8 +245,8 @@ export function RunHistory({ runs = defaultRuns }: RunHistoryProps) {
   const compareRuns: [Run, Run] | null =
     selectedIds.length === 2
       ? (() => {
-          const a = runs.find((r) => r.id === selectedIds[0]);
-          const b = runs.find((r) => r.id === selectedIds[1]);
+          const a = effectiveRuns.find((r) => r.id === selectedIds[0]);
+          const b = effectiveRuns.find((r) => r.id === selectedIds[1]);
           return a && b ? [a, b] : null;
         })()
       : null;

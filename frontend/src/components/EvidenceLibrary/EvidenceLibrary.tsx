@@ -1,13 +1,16 @@
 "use client";
 
 import { useState, useMemo, useId, useCallback } from "react";
-import { evidenceRecords, evidenceLibraryProject } from "@/data/EvidenceLibrary/EvidenceLibrary-data";
+import { mockEvidenceService } from "@/services/EvidenceService";
 import type {
   EvidenceRecord,
   EvidenceFilter,
   EvidenceSource,
 } from "./EvidenceLibrary_types";
 import "@/tailwind/components/EvidenceLibrary/EvidenceLibrary.css";
+
+const evidenceRecords = mockEvidenceService.getEvidenceRecords();
+const evidenceLibraryProject = mockEvidenceService.getProjectName();
 
 const FILTERS: { value: EvidenceFilter; label: string }[] = [
   { value: "all", label: "All" },

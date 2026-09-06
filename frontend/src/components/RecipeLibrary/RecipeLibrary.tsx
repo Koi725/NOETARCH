@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useId } from "react";
-import { recipes as defaultRecipes } from "@/data/RecipeLibrary/RecipeLibrary-data";
+import { mockRecipeService } from "@/services/RecipeService";
 import type {
   Recipe,
   CustomRecipe,
@@ -170,7 +170,8 @@ function RecipeCard({
   );
 }
 
-export function RecipeLibrary({ recipes = defaultRecipes }: RecipeLibraryProps) {
+export function RecipeLibrary({ recipes }: RecipeLibraryProps) {
+  const effectiveRecipes = recipes ?? mockRecipeService.getRecipes();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [customRecipes, setCustomRecipes] = useState<CustomRecipe[]>([]);
   const [toastId, setToastId] = useState<string | null>(null);
@@ -194,7 +195,7 @@ export function RecipeLibrary({ recipes = defaultRecipes }: RecipeLibraryProps) 
     showToast(copy.id, `"${copy.name}" added to your recipes`);
   };
 
-  const allRecipes: Array<Recipe | CustomRecipe> = [...recipes, ...customRecipes];
+  const allRecipes: Array<Recipe | CustomRecipe> = [...effectiveRecipes, ...customRecipes];
 
   return (
     <main className="no-recipe-library" aria-label="Recipe library">

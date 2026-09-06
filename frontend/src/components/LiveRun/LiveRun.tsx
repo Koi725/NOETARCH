@@ -1,16 +1,18 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import {
-  liveRunMeta,
-  liveRunSteps,
-  currentStepInspector,
-  liveRunKPIs,
-  liveRunEvents,
-  liveRunDecisions,
-  liveRunEvidenceCards,
-} from "@/data/LiveRun/LiveRun-data";
+import { mockRunService } from "@/services/RunService";
 import type { LiveRunLayout, StepState } from "./LiveRun_types";
+
+const {
+  meta: liveRunMeta,
+  steps: liveRunSteps,
+  stepInspector: currentStepInspector,
+  kpis: liveRunKPIs,
+  events: liveRunEvents,
+  decisions: liveRunDecisions,
+  evidenceCards: liveRunEvidenceCards,
+} = mockRunService.getLiveRunData();
 import "@/tailwind/components/LiveRun/LiveRun.css";
 
 function stepStateLabel(state: StepState, isPaused: boolean): string {
