@@ -5,3 +5,8 @@ __pycache__/
 .mypy_cache/
 .pytest_cache/
 .ruff_cache/
+# Local database artifacts — never commit
+*.db
+*.sqlite
+*.sqlite3
+noetarch.db

@@ -1,6 +1,7 @@
 """Application configuration, loaded from the environment (deny-by-default)."""
 from functools import lru_cache
 
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -13,6 +14,12 @@ class Settings(BaseSettings):
     environment: str = "development"
     # Explicit CORS allowlist (comma-separated). Empty = deny all cross-origin.
     cors_allow_origins: str = ""
+    # Database URL. Local default is a gitignored SQLite file; Postgres-compatible.
+    # Read from NOETARCH_DATABASE_URL or a bare DATABASE_URL. Never committed.
+    database_url: str = Field(
+        default="sqlite:///./noetarch.db",
+        validation_alias=AliasChoices("NOETARCH_DATABASE_URL", "DATABASE_URL"),
+    )
 
     @property
     def cors_origins(self) -> list[str]:
