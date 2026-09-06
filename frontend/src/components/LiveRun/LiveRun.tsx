@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { fetchLiveRunData, type LiveRunData } from "@/services/RunService";
 import type { LiveRunLayout, StepState } from "./LiveRun_types";
-import { useScreenTour, LIVE_RUN_TOUR_KEY, LIVE_RUN_TOUR_STEPS } from "@/components/ui";
+import { useScreenTour, LiveRunSkeleton, LIVE_RUN_TOUR_KEY, LIVE_RUN_TOUR_STEPS } from "@/components/ui";
 import "@/tailwind/components/LiveRun/LiveRun.css";
 
 function stepStateLabel(state: StepState, isPaused: boolean): string {
@@ -65,7 +65,7 @@ function StepInspector({
 }) {
   const s = inspector;
   return (
-    <section className="no-live-inspector" aria-labelledby="inspector-heading">
+    <section id="live-run-inspector" className="no-live-inspector" aria-labelledby="inspector-heading">
       <div className="no-inspector-heading-row">
         <h2 id="inspector-heading" className="no-inspector-heading">
           Step {s.stepIndex}: {s.label}
@@ -98,7 +98,7 @@ function StepInspector({
 
 function KPIRow({ kpis }: { kpis: LiveRunData["kpis"] }) {
   return (
-    <div className="no-live-kpi-row" role="region" aria-label="Run metrics">
+    <div id="live-run-kpis" className="no-live-kpi-row" role="region" aria-label="Run metrics">
       {kpis.map((kpi) => (
         <div className="no-live-kpi" key={kpi.label}>
           <div className="no-live-kpi-label">{kpi.label}</div>
@@ -163,7 +163,7 @@ function DecisionInspector({ decisions }: { decisions: LiveRunData["decisions"] 
 
 function EvidenceCards({ cards }: { cards: LiveRunData["evidenceCards"] }) {
   return (
-    <section className="no-live-evidence" aria-labelledby="evidence-heading">
+    <section id="live-run-evidence" className="no-live-evidence" aria-labelledby="evidence-heading">
       <h2 id="evidence-heading" className="no-evidence-heading">
         Evidence cards
       </h2>
@@ -281,7 +281,7 @@ export function LiveRun() {
   if (!data) {
     return (
       <div className="no-live-page" role="status" aria-label="Loading the active run">
-        <p className="no-live-loading">Loading the active run…</p>
+        <LiveRunSkeleton />
       </div>
     );
   }
