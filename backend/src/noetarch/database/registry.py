@@ -3,6 +3,7 @@
 Import side effects register the tables. Call :func:`import_all_models` (or simply
 import this module) before ``create_all`` / Alembic autogenerate / migrations.
 """
+from noetarch.modules.audit.infrastructure import models as audit_models
 from noetarch.modules.decisions.infrastructure import models as decisions_models
 from noetarch.modules.evidence.infrastructure import models as evidence_models
 from noetarch.modules.guided_review.infrastructure import models as guided_review_models
@@ -21,6 +22,7 @@ _ALL_MODEL_MODULES = (
     recipes_models,
     history_models,
     models_policy_models,
+    audit_models,
 )
 
 

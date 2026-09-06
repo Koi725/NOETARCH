@@ -2,7 +2,7 @@
 
 All queries use SQLAlchemy constructs (parameterized); no raw SQL.
 """
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from noetarch.modules.evidence.infrastructure.models import EvidenceRecordORM
@@ -33,6 +33,48 @@ class EvidenceRepository:
         ).scalar_one_or_none()
         return project or ""
 
+    # ── freeze helpers (M9 write path) ──────────────────────────────────────────
+
+    def existing_dois(self) -> set[str]:
+        """Lowercased DOIs already persisted — used for fetch-and-freeze dedupe."""
+        rows = self._session.execute(
+            select(EvidenceRecordORM.doi).where(EvidenceRecordORM.doi.is_not(None))
+        ).scalars().all()
+        return {d.lower() for d in rows if d}
+
+    def id_exists(self, record_id: str) -> bool:
+        return self._session.get(EvidenceRecordORM, record_id) is not None
+
+    def next_sort_order(self) -> int:
+        current_max = self._session.execute(
+            select(func.max(EvidenceRecordORM.sort_order))
+        ).scalar_one_or_none()
+        return (current_max or 0) + 1
+
+    def add_record(self, record: EvidenceRecord, *, sort_order: int) -> None:
+        """Insert a fetched record (parameterized via the ORM). Caller commits."""
+        self._session.add(
+            EvidenceRecordORM(
+                id=record.id,
+                sort_order=sort_order,
+                project=self.project_name(),
+                title=record.title,
+                authors=record.authors,
+                year=record.year,
+                journal=record.journal,
+                doi=record.doi,
+                status=record.status,
+                sources=[s.model_dump() for s in record.sources],
+                provenance=list(record.provenance),
+                agreement_count=record.agreementCount,
+                total_sources=record.totalSources,
+                missing_doi=record.missingDoi,
+                conflict_note=record.conflictNote,
+                source=record.source,
+                retrieved_at=record.retrievedAt,
+            )
+        )
+
     @staticmethod
     def _to_schema(row: EvidenceRecordORM) -> EvidenceRecord:
         return EvidenceRecord.model_validate(
@@ -50,5 +92,7 @@ class EvidenceRepository:
                 "totalSources": row.total_sources,
                 "missingDoi": row.missing_doi,
                 "conflictNote": row.conflict_note,
+                "source": row.source,
+                "retrievedAt": row.retrieved_at,
             }
         )

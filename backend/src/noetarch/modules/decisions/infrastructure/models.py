@@ -22,6 +22,10 @@ class DecisionORM(Base):
     alternatives: Mapped[list[str]] = mapped_column(JSON)
     status: Mapped[str] = mapped_column(String)
     rejected_at: Mapped[str | None] = mapped_column(String, nullable=True)
+    # M8 state machine
+    version: Mapped[int] = mapped_column(Integer, default=1, server_default="1")
+    resolved_at: Mapped[str | None] = mapped_column(String, nullable=True)
+    resolution_action: Mapped[str | None] = mapped_column(String, nullable=True)
 
 
 def build_seed_rows() -> list[DecisionORM]:

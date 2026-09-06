@@ -30,6 +30,9 @@ class EvidenceRecordORM(Base):
     total_sources: Mapped[int] = mapped_column(Integer)
     missing_doi: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
     conflict_note: Mapped[str | None] = mapped_column(String, nullable=True)
+    # M9 provenance
+    source: Mapped[str] = mapped_column(String, default="seed", server_default="seed")
+    retrieved_at: Mapped[str | None] = mapped_column(String, nullable=True)
 
 
 def build_seed_rows() -> list[EvidenceRecordORM]:
@@ -52,6 +55,8 @@ def build_seed_rows() -> list[EvidenceRecordORM]:
                 total_sources=rec.totalSources,
                 missing_doi=rec.missingDoi,
                 conflict_note=rec.conflictNote,
+                source="seed",
+                retrieved_at=None,
             )
         )
     return rows
