@@ -1,6 +1,7 @@
 export type DecisionRisk = "high" | "medium" | "low";
 export type DecisionType = "cloud-egress" | "local-file" | "workflow-change";
-export type DecisionStatus = "pending" | "approved" | "rejected" | "alternative";
+export type DecisionStatus = "pending" | "approved" | "rejected" | "local_alternative";
+export type DecisionActionType = "approve" | "reject" | "use_local_alternative";
 
 export interface Decision {
   id: string;
@@ -14,7 +15,10 @@ export interface Decision {
   detail: string;
   alternatives: string[];
   status: DecisionStatus;
-  rejectedAt?: string;
+  rejectedAt?: string | null;
+  version: number;
+  resolvedAt?: string | null;
+  resolutionAction?: DecisionActionType | null;
 }
 
 export interface DecisionCardProps {
