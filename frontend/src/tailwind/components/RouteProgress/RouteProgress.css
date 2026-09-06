@@ -1,0 +1,9 @@
+.no-route-progress {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 60;
+  height: 2px;
+  background: var(--accent);
+  transform-origin: left;
+  animation: noRoute .7s cubic-bezier(.2,.8,.2,1) both;
+}
