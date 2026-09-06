@@ -1,0 +1,222 @@
+{
+  "generatedAt": "2026-09-06T09:54:45.495Z",
+  "url": "http://127.0.0.1:3100/",
+  "screenshots": [
+    "desktop-obsidian.png",
+    "desktop-daylight.png",
+    "tablet-daylight.png",
+    "mobile-obsidian.png",
+    "command-palette-focus.png",
+    "zoom-200.png"
+  ],
+  "layouts": {
+    "desktopObsidian": {
+      "innerWidth": 1440,
+      "innerHeight": 1000,
+      "clientWidth": 1440,
+      "scrollWidth": 1440,
+      "bodyScrollWidth": 1440,
+      "mode": "night",
+      "prototypeVisible": true,
+      "prototypeText": "Prototype · Mock data",
+      "activeLinks": [
+        {
+          "text": "Today",
+          "href": "/"
+        }
+      ],
+      "disabledNavigation": [
+        "Live runComing soon",
+        "DecisionsComing soon",
+        "EvidenceComing soon",
+        "Guided reviewComing soon",
+        "RecipesComing soon",
+        "History & replayComing soon",
+        "Models & policyComing soon",
+        "First runComing soon",
+        "Loading & empty statesComing soon"
+      ],
+      "disabledActions": [
+        "Start a review — coming soon",
+        "Look closer — coming soon",
+        "Decide — coming soon",
+        "Watch the live literature run — coming soon",
+        "Try that step again — coming soon",
+        "See where it stopped — coming soon",
+        "Change what’s allowed — coming soon"
+      ]
+    },
+    "desktopDaylight": {
+      "innerWidth": 1440,
+      "innerHeight": 1000,
+      "clientWidth": 1440,
+      "scrollWidth": 1440,
+      "bodyScrollWidth": 1440,
+      "mode": "day",
+      "prototypeVisible": true,
+      "prototypeText": "Prototype · Mock data",
+      "activeLinks": [
+        {
+          "text": "Today",
+          "href": "/"
+        }
+      ],
+      "disabledNavigation": [
+        "Live runComing soon",
+        "DecisionsComing soon",
+        "EvidenceComing soon",
+        "Guided reviewComing soon",
+        "RecipesComing soon",
+        "History & replayComing soon",
+        "Models & policyComing soon",
+        "First runComing soon",
+        "Loading & empty statesComing soon"
+      ],
+      "disabledActions": [
+        "Start a review — coming soon",
+        "Look closer — coming soon",
+        "Decide — coming soon",
+        "Watch the live literature run — coming soon",
+        "Try that step again — coming soon",
+        "See where it stopped — coming soon",
+        "Change what’s allowed — coming soon"
+      ]
+    },
+    "tablet": {
+      "innerWidth": 820,
+      "innerHeight": 1180,
+      "clientWidth": 820,
+      "scrollWidth": 820,
+      "bodyScrollWidth": 820,
+      "mode": "day",
+      "prototypeVisible": true,
+      "prototypeText": "Prototype · Mock data",
+      "activeLinks": [
+        {
+          "text": "Today",
+          "href": "/"
+        }
+      ],
+      "disabledNavigation": [
+        "Live runComing soon",
+        "DecisionsComing soon",
+        "EvidenceComing soon",
+        "Guided reviewComing soon",
+        "RecipesComing soon",
+        "History & replayComing soon",
+        "Models & policyComing soon",
+        "First runComing soon",
+        "Loading & empty statesComing soon"
+      ],
+      "disabledActions": [
+        "Start a review — coming soon",
+        "Look closer — coming soon",
+        "Decide — coming soon",
+        "Watch the live literature run — coming soon",
+        "Try that step again — coming soon",
+        "See where it stopped — coming soon",
+        "Change what’s allowed — coming soon"
+      ]
+    },
+    "mobile": {
+      "innerWidth": 390,
+      "innerHeight": 844,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "bodyScrollWidth": 390,
+      "mode": "night",
+      "prototypeVisible": true,
+      "prototypeText": "Prototype · Mock data",
+      "activeLinks": [
+        {
+          "text": "Today",
+          "href": "/"
+        }
+      ],
+      "disabledNavigation": [
+        "Live runComing soon",
+        "DecisionsComing soon",
+        "EvidenceComing soon",
+        "Guided reviewComing soon",
+        "RecipesComing soon",
+        "History & replayComing soon",
+        "Models & policyComing soon",
+        "First runComing soon",
+        "Loading & empty statesComing soon"
+      ],
+      "disabledActions": [
+        "Start a review — coming soon",
+        "Look closer — coming soon",
+        "Decide — coming soon",
+        "Watch the live literature run — coming soon",
+        "Try that step again — coming soon",
+        "See where it stopped — coming soon",
+        "Change what’s allowed — coming soon"
+      ]
+    },
+    "zoom200": {
+      "emulation": "1440x1000 physical viewport at 2x scale; 720x500 CSS viewport",
+      "innerWidth": 720,
+      "innerHeight": 500,
+      "devicePixelRatio": 2,
+      "documentClientWidth": 720,
+      "documentScrollWidth": 720,
+      "bodyScrollWidth": 720
+    }
+  },
+  "accessibility": {
+    "paletteInitialFocus": {
+      "dialog": true,
+      "activeText": "Switch to Daylight (light)Daylight",
+      "activeDisabled": false
+    },
+    "paletteTabTarget": "Close command palette",
+    "paletteShiftTabTarget": "Switch to Daylight (light)Daylight",
+    "paletteEscape": {
+      "dialogClosed": true,
+      "focusRestoredText": "⌕ Search anything · ⌘K"
+    },
+    "keyboardFocus": {
+      "text": "Today",
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineOffset": "2px"
+    },
+    "reducedMotion": {
+      "mediaMatches": true,
+      "headerAnimation": "none",
+      "brandAnimation": "none",
+      "progressTransition": "0s"
+    },
+    "manualMotionOff": {
+      "rootSetting": "off",
+      "headerAnimation": "none",
+      "progressTransition": "0s",
+      "persisted": "false"
+    }
+  },
+  "contrast": {
+    "obsidian": {
+      "minimum": {
+        "ratio": 4.814463319361196,
+        "text": "Finished recently",
+        "color": "rgb(113, 130, 143)",
+        "background": "rgb(12, 16, 19)"
+      },
+      "minimumFontSize": 12,
+      "failures": [],
+      "failureCount": 0
+    },
+    "daylight": {
+      "minimum": {
+        "ratio": 4.782933954813093,
+        "text": "Workspace · this device",
+        "color": "rgb(111, 106, 102)",
+        "background": "rgb(243, 242, 242)"
+      },
+      "minimumFontSize": 12,
+      "failures": [],
+      "failureCount": 0
+    }
+  }
+}
