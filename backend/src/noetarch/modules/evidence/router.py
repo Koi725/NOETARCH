@@ -9,12 +9,25 @@ Security controls:
   - No write endpoints on this surface.
   - CORS allowlist enforced at the app level (NOETARCH_CORS_ALLOW_ORIGINS).
 """
-from fastapi import APIRouter, Depends, HTTPException, Path
+from fastapi import APIRouter, Depends, HTTPException, Path, Request
 from sqlalchemy.orm import Session
 
 from noetarch.core.database import get_session
+from noetarch.core.egress import EgressError
+from noetarch.modules.audit.repository import AuditRepository
+from noetarch.modules.evidence.dependencies import (
+    EvidenceProvider,
+    external_sources_enabled,
+    get_evidence_provider,
+)
+from noetarch.modules.evidence.freeze_service import EvidenceFreezeService
 from noetarch.modules.evidence.repository import EvidenceRepository
-from noetarch.modules.evidence.schemas import EvidenceListResponse, EvidenceRecord
+from noetarch.modules.evidence.schemas import (
+    EvidenceListResponse,
+    EvidenceRecord,
+    EvidenceSearchRequest,
+    EvidenceSearchResponse,
+)
 from noetarch.modules.evidence.service import EvidenceService
 
 router = APIRouter(tags=["evidence"])
@@ -26,6 +39,52 @@ _ID_PATTERN = r"^[a-z][a-z0-9_-]{0,62}$"
 def list_evidence(session: Session = Depends(get_session)) -> EvidenceListResponse:
     """List all evidence records for the active project."""
     return EvidenceService(EvidenceRepository(session)).list_records()
+
+
+@router.post("/search", response_model=EvidenceSearchResponse)
+def search_evidence(
+    request: Request,
+    body: EvidenceSearchRequest,
+    enabled: bool = Depends(external_sources_enabled),
+    provider: EvidenceProvider = Depends(get_evidence_provider),
+    session: Session = Depends(get_session),
+) -> EvidenceSearchResponse:
+    """Fetch matching works from an external source, freeze them, return typed records.
+
+    A query STRING is the only input. When external sources are disabled (default) this
+    makes ZERO network calls and returns a clear disabled state.
+    """
+    if not enabled:
+        return EvidenceSearchResponse(
+            enabled=False,
+            source="openalex",
+            query=body.query,
+            message=(
+                "External sources are disabled. Set NOETARCH_EXTERNAL_SOURCES_ENABLED=1 to"
+                " enable fetching; the app otherwise runs on local data only."
+            ),
+        )
+
+    request_id = getattr(request.state, "request_id", None)
+    try:
+        records = provider.search(body.query)
+    except EgressError as exc:
+        raise HTTPException(status_code=502, detail="External source unavailable.") from exc
+
+    freeze = EvidenceFreezeService(
+        session, EvidenceRepository(session), AuditRepository(session)
+    )
+    result = freeze.freeze(records, query=body.query, source="openalex", request_id=request_id)
+    retrieved_at = records[0].retrievedAt if records else None
+    return EvidenceSearchResponse(
+        enabled=True,
+        source="openalex",
+        query=body.query,
+        retrievedAt=retrieved_at,
+        frozen=len(result.frozen),
+        deduplicated=result.deduplicated,
+        records=records,
+    )
 
 
 @router.get("/{record_id}", response_model=EvidenceRecord)

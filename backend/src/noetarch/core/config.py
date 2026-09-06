@@ -20,6 +20,11 @@ class Settings(BaseSettings):
         default="sqlite:///./noetarch.db",
         validation_alias=AliasChoices("NOETARCH_DATABASE_URL", "DATABASE_URL"),
     )
+    # External data sources (M9). Default OFF: the app runs fully offline on DB/seed
+    # data and never makes an outbound network call unless this is explicitly enabled.
+    external_sources_enabled: bool = False
+    # Contact email for the polite User-Agent (OpenAlex polite pool). Not a secret.
+    egress_contact_email: str = ""
 
     @property
     def cors_origins(self) -> list[str]:
