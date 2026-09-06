@@ -1,0 +1,17 @@
+.no-application-shell {
+  display: grid;
+  grid-template-columns: 236px minmax(0, 1fr);
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--ink);
+}
+
+.no-shell-main { min-width: 0; }
+
+.no-application-shell button,
+.no-application-shell a { border-radius: 0; }
+
+@media (max-width: 899px) {
+  .no-application-shell { display: block; width: 100%; max-width: 100vw; overflow-x: clip; }
+  .no-shell-main { width: 100%; max-width: 100vw; }
+}
