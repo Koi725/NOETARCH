@@ -9,7 +9,8 @@ import type { SidebarNavigationProps } from "./SidebarNavigation_types";
 import "@/tailwind/components/SidebarNavigation/SidebarNavigation.css";
 
 function isCurrentPath(currentPath: string, href: string) {
-  return href === "/" ? currentPath === "/" || currentPath === "/today" : currentPath.startsWith(href);
+  if (href === "/today") return currentPath === "/" || currentPath === "/today";
+  return currentPath.startsWith(href);
 }
 
 export function SidebarNavigation({ currentPath, onOpenPalette, onNavigate }: SidebarNavigationProps) {
