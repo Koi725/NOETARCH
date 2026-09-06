@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useId } from "react";
-import { mockDecisionService } from "@/services/DecisionService";
+import { useState, useEffect, useId } from "react";
+import { fetchDecisions } from "@/services/DecisionService";
 import type {
   Decision,
   DecisionCenterProps,
@@ -163,8 +163,52 @@ function DecisionCard({
   );
 }
 
-export function DecisionCenter({ decisions }: DecisionCenterProps) {
-  const effectiveDecisions = decisions ?? mockDecisionService.getDecisions();
+export function DecisionCenter({ decisions: decisionsProp }: DecisionCenterProps) {
+  const [decisions, setDecisions] = useState<Decision[] | null>(decisionsProp ?? null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (decisionsProp) return;
+    let cancelled = false;
+    fetchDecisions()
+      .then((data) => {
+        if (!cancelled) setDecisions(data);
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : "Failed to load decisions.");
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [decisionsProp]);
+
+  if (error) {
+    return (
+      <main className="no-decision-center" aria-label="Decision center">
+        <div role="alert" className="no-decision-error">
+          <p>{error}</p>
+        </div>
+      </main>
+    );
+  }
+
+  if (!decisions) {
+    return (
+      <main className="no-decision-center" aria-label="Decision center">
+        <p className="no-decision-loading" role="status" aria-label="Loading decisions">
+          Loading decisions…
+        </p>
+      </main>
+    );
+  }
+
+  return <DecisionCenterView decisions={decisions} />;
+}
+
+function DecisionCenterView({ decisions }: { decisions: Decision[] }) {
+  const effectiveDecisions = decisions;
   const [cardStates, setCardStates] = useState<Record<string, CardState>>(
     () =>
       Object.fromEntries(
