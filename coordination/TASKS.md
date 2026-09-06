@@ -9,5 +9,10 @@
 | RUF-002 | Replace/disable pre-existing unpinned global Ruflo MCP entry for project use | CEO | blocked | CEO-only client configuration decision |
 | COM-001 | Complete nonce round trip | Claude + Codex | blocked | RUF-001 and pinned MCP registration |
 | COM-002 | Run one read-only Codex dual-mode fixture worker | Orchestration Lead | blocked | RUF-001, COM-001, explicit worker authorization |
-| PROD-001 | Begin frontend/backend implementation | unassigned | blocked | Separate CEO phase-opening decision |
-
+| PROD-001 | Begin product implementation | GPT/Codex Co-CTO | in progress (frontend only) | M0-M2 authorized; M3, backend integration, real APIs, and product-domain work blocked |
+| FE-000 | Inspect and freeze the complete design handoff | GPT/Codex Co-CTO | complete with recorded source limitation | Four surviving fallback files verified with canonical paths and SHA-256 hashes; requested source directory and previously referenced README are absent and were not recreated |
+| FE-001 | Initialize exact-pinned frontend foundation | GPT/Codex Co-CTO | complete | Exact pins and lockfile present; lint, strict type-check, tests, build, and dependency-tree validation pass |
+| FE-002 | Implement design tokens and theme foundation | GPT/Codex Co-CTO | complete after remediation | Initially crossed the M1 stop; prospectively authorized by CEO after recovery review |
+| FE-003 | Implement application shell and responsive navigation | GPT/Codex Co-CTO | complete after remediation | Future M3 destinations are accessible unavailable items, not broken links |
+| FE-004 | Add tests and perform accessibility/config review | GPT/Codex Co-CTO | complete after remediation | 6 files/19 tests plus production-mode desktop dark/light, tablet, mobile, keyboard, motion, zoom, overflow, and contrast evidence in `docs/frontend/M2_ACCESSIBILITY.md` |
+| FE-005 | Recover and remediate the M2 authorization boundary | GPT/Codex Co-CTO | complete | CEO-authorized source/docs remediation only; no backend, Ruflo, Git, or M3 effects |
