@@ -1,8 +1,8 @@
 # NOETARCH Status
 
-**Updated:** 2026-09-04  
-**Phase:** Governance, agent architecture, Ruflo assessment, and communication-test preparation  
-**Product development:** Not authorized
+**Updated:** 2026-09-06
+**Phase:** Governance, communication verification, and completed frontend M0-M2 foundation
+**Product development:** M0-M2 frontend foundation complete; M3, backend integration, real API calls, and product-domain implementation are blocked
 
 ## Current state
 
@@ -13,17 +13,17 @@
 - Shared-memory Claude ↔ Codex round trip: BLOCKED — nonce generated but not stored because the approved pinned repository runtime is absent.
 - Headless dual-mode worker test: BLOCKED — test fixture and procedure prepared, not executed.
 - Background processes: none reported by Ruflo after audit cleanup.
+- Frontend authorization history: M0 and M1 were initially authorized. M2 work crossed the intended M1 stop and was identified by the recovery audit. After reviewing that audit, the CEO authorized M2 completion and remediation prospectively; this was not retroactive authorization.
+- Frontend phase: COMPLETE through M2 only — surviving handoff sources are hashed, the exact-pinned foundation and shared design system are validated, and the application shell exposes a visibly disclosed mock-only Today surface.
+- Frontend validation: lint, strict type-check, 6 files/19 tests, production build, dependency-tree resolution, desktop Obsidian/Daylight, tablet, mobile, keyboard focus, reduced motion, 200% zoom equivalent, overflow, and computed contrast checks pass. Evidence is recorded in `docs/frontend/M2_ACCESSIBILITY.md` and `docs/frontend/evidence/m2/`.
+- M0 source limitation: the requested `design_handoff_report` directory and the fallback README are absent; four surviving canonical sources are recorded with SHA-256 hashes and no missing content was recreated.
+- M3 boundary: BLOCKED — future destinations remain unavailable and must not be implemented as fake pages.
+- Backend boundary: protected and untouched by the M2 remediation; no frontend/backend integration is authorized.
 
 ## Pending approvals
 
 The CEO must review governance, select a project license and private security contact, decide whether to accept or wait on Ruflo dependency risk, and explicitly authorize any local installation or MCP configuration change.
 
-## Ruflo Activation — APPROVED (2026-09-05, CEO)
-- Scope: memory-only coordination substrate
-- Server: ruflo-memory · claude-flow@3.38.12 (pinned) · stdio · loopback
-- Disabled: daemon (RUFLO_DAEMON_AUTOSTART=0), hooks, federation, auto-update (--no-update), terminal-exec
-- Install: isolated ~/.noetarch/ruflo (--omit=optional --ignore-scripts)
-- DB: ~/.noetarch/memory/.swarm/memory.db (outside git)
-- Egress: verified ZERO (lsof empty on PID 3657, at rest + during store)
-- Global ruflo@latest entry: removed
-- COM-001 cross-agent round-trip: PENDING
+## Ruflo activation
+
+Ruflo remains disabled for this repository. The machine-local `.mcp.json` launch configuration is ignored, is not a repository artifact, and must not be activated. No Ruflo command was executed during frontend remediation.
