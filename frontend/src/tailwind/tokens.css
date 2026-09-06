@@ -1,0 +1,94 @@
+:root {
+  --bg: #07090b;
+  --panel: #0a0d10;
+  --panel2: #0c1013;
+  --raise: #0e1418;
+  --line: #1b232a;
+  --line2: #141b21;
+  --btnline: #2a343d;
+  --hover: #111820;
+  --ink: #e8eff5;
+  --ink2: #96a4b1;
+  --ink3: #71828f;
+  --ink4: #4f5f6c;
+  --accent: #22d3ee;
+  --accent-ink: #04161a;
+  --accent-text: #4fdcf3;
+  --accent-soft: #0d2b31;
+  --warn: #f2b02e;
+  --warn-ink: #1a1408;
+  --warn-bg: #100f0b;
+  --warn-line: #2f2718;
+  --warn-text: #f2b02e;
+  --ok: #2fd08a;
+  --ok-bg: #0f2620;
+  --ok-text: #2fd08a;
+  --bad: #ec3013;
+  --bad-bg: #1a0f0c;
+  --bad-line: #3a2119;
+  --bad-text: #ff8a70;
+  --violet: #8b7cff;
+  --violet-bg: #0f0d18;
+  --violet-text: #b3a9e8;
+  --skel: #161e25;
+  --skel-hi: #202b33;
+  --palette-backdrop: rgba(3, 6, 8, 0.62);
+  --sweep-highlight: rgba(255, 255, 255, 0.34);
+  --glow: 0 0 0 1px rgba(34, 211, 238, 0.25), 0 18px 60px -28px rgba(34, 211, 238, 0.45);
+
+  --font-heading: "Archivo", sans-serif;
+  --font-body: "Archivo", sans-serif;
+  --font-mono: ui-monospace, Menlo, monospace;
+  --focus-ring: 2px solid var(--accent);
+  --focus-offset: 2px;
+}
+
+[data-mode="day"] {
+  --bg: #f3f2f2;
+  --panel: #fffefe;
+  --panel2: #faf9f8;
+  --raise: #ffffff;
+  --line: #d2cecb;
+  --line2: #e6e3e1;
+  --btnline: #c9c4c1;
+  --hover: #efedeb;
+  --ink: #201e1d;
+  --ink2: #514c49;
+  --ink3: #6f6a66;
+  --ink4: #8d8783;
+  --accent: #ec3013;
+  --accent-ink: #ffffff;
+  --accent-text: #a81f0a;
+  --accent-soft: #fdeae6;
+  --warn: #a86c00;
+  --warn-ink: #ffffff;
+  --warn-bg: #fdf7e8;
+  --warn-line: #e0cb9c;
+  --warn-text: #7a4e00;
+  --ok: #16794f;
+  --ok-bg: #e6f4ec;
+  --ok-text: #12603f;
+  --bad: #ec3013;
+  --bad-bg: #fdeae6;
+  --bad-line: #e8bbb1;
+  --bad-text: #a81f0a;
+  --violet: #5b4ed6;
+  --violet-bg: #f0eefc;
+  --violet-text: #453aa8;
+  --skel: #e7e4e2;
+  --skel-hi: #f4f2f1;
+  --palette-backdrop: rgba(32, 30, 29, 0.42);
+  --sweep-highlight: rgba(255, 255, 255, 0.5);
+  --glow: 0 0 0 1px rgba(236, 48, 19, 0.2), 0 18px 50px -30px rgba(32, 30, 29, 0.45);
+}
+
+/* Keep the interface floor and selection treatment in the token layer. */
+html {
+  font-size: 100%;
+  text-wrap: pretty;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
