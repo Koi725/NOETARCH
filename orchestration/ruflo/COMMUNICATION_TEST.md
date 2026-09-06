@@ -1,4 +1,4 @@
-# Claude Code ↔ Codex Communication Test
+# the implementation agent ↔ Codex Communication Test
 
 ## Current result
 
@@ -16,7 +16,7 @@ It has not been stored. Do not mark the test started until an approved local MCP
 
 ## Preconditions
 
-1. CEO approves `ruflo@3.38.21` or a safer replacement version and the exact lockfile.
+1. maintainer approves `ruflo@3.38.21` or a safer replacement version and the exact lockfile.
 2. Project-scoped Codex and Claude MCP registrations invoke the reviewed local MCP entrypoint, not `@latest`.
 3. `codex mcp list` and the Claude equivalent show the intended server enabled.
 4. Autopilot, federation, hooks, publishing, GitHub automation, network listeners, and background daemons are disabled.
@@ -40,7 +40,7 @@ a507b9f394f9ec55ef253f9f16c34072e4212907fbcbd093:ACK
 
 5. Record PASS only after step 4. If only `scripts/ruflo-memory-smoke.sh` CLI fallback works, record PARTIAL.
 
-### Exact Claude Code prompt
+### Exact the implementation agent prompt
 
 ```text
 You are performing NOETARCH communication test COM-001. Read AGENTS.md and orchestration/ruflo/COMMUNICATION_TEST.md first. Use only the already registered, approved local Ruflo MCP server. Do not run any Git mutation, network operation, initializer, package install, hook, daemon, swarm, or worker. In Ruflo namespace `noetarch-smoke`, retrieve key `codex-to-claude`. It must equal exactly `a507b9f394f9ec55ef253f9f16c34072e4212907fbcbd093`. If it differs or cannot be retrieved through MCP, stop and report BLOCKED without writing anything. If it matches, store key `claude-to-codex` with exact value `a507b9f394f9ec55ef253f9f16c34072e4212907fbcbd093:ACK` in the same namespace, then retrieve it once to verify exact equality. Report the MCP tool names used and their success/failure. Do not claim the end-to-end test passed; Codex must independently retrieve and verify the acknowledgement.
@@ -48,7 +48,7 @@ You are performing NOETARCH communication test COM-001. Read AGENTS.md and orche
 
 ## Test B — one read-only Codex worker
 
-After Test A passes and the CEO separately authorizes a worker, run `scripts/ruflo-dual-readonly-smoke.sh`. It launches one Codex worker with a 60-second timeout, permits reading only `orchestration/ruflo/fixtures/worker-input.txt`, requires exact content and SHA-256 output, and then checks dual status and the process marker. No Git command or write is part of the worker prompt.
+After Test A passes and the maintainer separately authorizes a worker, run `scripts/ruflo-dual-readonly-smoke.sh`. It launches one Codex worker with a 60-second timeout, permits reading only `orchestration/ruflo/fixtures/worker-input.txt`, requires exact content and SHA-256 output, and then checks dual status and the process marker. No Git command or write is part of the worker prompt.
 
 PASS requires correct fixture output, exit code 0, completed worker status, and no matching orphan process. Any missing evidence is PARTIAL or FAIL; an unavailable approved runtime is BLOCKED.
 

@@ -2,7 +2,7 @@
 
 ## Decision
 
-Do not run Ruflo's initializer or install its dependency graph in NOETARCH yet. The candidate version is recorded, but activation requires dependency remediation and CEO approval.
+Do not run Ruflo's initializer or install its dependency graph in NOETARCH yet. The candidate version is recorded, but activation requires dependency remediation and maintainer approval.
 
 ## Official sources reviewed
 
@@ -57,7 +57,7 @@ Generated MCP configuration used `ruflo@latest`; Codex config enabled network ac
 
 ## Manual integration design after approval
 
-1. Install only the exact reviewed tuple and commit a CEO-reviewed lockfile.
+1. Install only the exact reviewed tuple and commit a maintainer-reviewed lockfile.
 2. Use the local MCP entrypoint `node_modules/@claude-flow/cli/bin/mcp-server.js`; never `npx ...@latest`.
 3. Keep tracked governance authored manually. Never run an initializer over the repository.
 4. Enable only core orchestration, hierarchical swarms, shared memory, security auditing, and MetaHarness auditing.

@@ -20,7 +20,7 @@ The GitHub release notes identify 3.38.21 as an MCP HTTP bridge memory-persisten
 - Node: `v26.4.0` — satisfies both declared ranges.
 - npm: `11.17.0`.
 - Codex CLI: `0.153.2`.
-- Claude Code: `2.1.195`.
+- the implementation agent: `2.1.195`.
 
 ## Installation state
 

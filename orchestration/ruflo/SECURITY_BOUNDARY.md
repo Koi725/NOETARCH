@@ -39,5 +39,5 @@ Official Ruflo security history also includes GHSA-c4hm-4h84-2cf3, an unauthenti
 
 ## Activation gate
 
-CEO approval requires an exact lockfile, current audit with no unexplained critical/high reachable path, reviewed local-only MCP configuration, initializer diff evidence, clean process-shutdown evidence, and confirmation that authoritative governance cannot be overwritten.
+maintainer approval requires an exact lockfile, current audit with no unexplained critical/high reachable path, reviewed local-only MCP configuration, initializer diff evidence, clean process-shutdown evidence, and confirmation that authoritative governance cannot be overwritten.
 
