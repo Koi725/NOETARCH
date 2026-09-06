@@ -7,6 +7,7 @@ import type { PolicyProvider, ProviderState, ProviderStateMap } from "./ModelsPo
 // Routing options/labels are static UI display config (enums), not backend data.
 const ROUTING_OPTIONS = mockModelsPolicyService.getRoutingOptions();
 const ROUTING_PREFERENCE_LABELS = mockModelsPolicyService.getRoutingPreferenceLabels();
+import { useScreenTour, ProviderGridSkeleton, MODELS_POLICY_TOUR_KEY, MODELS_POLICY_TOUR_STEPS } from "@/components/ui";
 import "@/tailwind/components/ModelsPolicy/ModelsPolicy.css";
 
 function buildInitialState(providers: PolicyProvider[]): ProviderStateMap {
@@ -240,6 +241,7 @@ function ProviderCard({
 }
 
 export function ModelsPolicy() {
+  useScreenTour(MODELS_POLICY_TOUR_KEY, MODELS_POLICY_TOUR_STEPS);
   const [providers, setProviders] = useState<PolicyProvider[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -272,7 +274,7 @@ export function ModelsPolicy() {
   if (!providers) {
     return (
       <div className="no-models-policy-page" role="status" aria-label="Loading provider policies">
-        <p className="no-policy-loading">Loading provider policies…</p>
+        <ProviderGridSkeleton />
       </div>
     );
   }
@@ -341,13 +343,13 @@ function ModelsPolicyView({ providers }: { providers: PolicyProvider[] }) {
       </header>
 
       <div className="no-models-policy-body">
-        <div className="no-policy-credential-notice" role="note">
+        <div id="policy-credentials" className="no-policy-credential-notice" role="note">
           <strong>API credentials are not managed here.</strong> Set environment variables in your
           shell (e.g. <code>ANTHROPIC_API_KEY</code>) — NOETARCH reads them at startup and never
           stores them.
         </div>
 
-        <div className="no-policy-provider-list" role="list" aria-label="AI provider policies">
+        <div id="policy-providers" className="no-policy-provider-list" role="list" aria-label="AI provider policies">
           {modelsPolicyData.map((provider) => {
             const state = providerState[provider.id];
             if (!state) return null;
@@ -367,7 +369,7 @@ function ModelsPolicyView({ providers }: { providers: PolicyProvider[] }) {
           })}
         </div>
 
-        <section className="no-policy-routing-explainer" aria-labelledby="routing-explainer-heading">
+        <section id="policy-routing" className="no-policy-routing-explainer" aria-labelledby="routing-explainer-heading">
           <h2 id="routing-explainer-heading">How task routing works</h2>
           <dl className="no-policy-routing-dl">
             <dt>Prefer</dt>
