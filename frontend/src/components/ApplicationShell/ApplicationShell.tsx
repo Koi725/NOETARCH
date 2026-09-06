@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { CommandPalette } from "@/components/CommandPalette";
 import { RouteProgress } from "@/components/RouteProgress";
 import { SidebarNavigation } from "@/components/SidebarNavigation";
-import { TourProvider, TourHelpButton } from "@/components/ui";
+import { TourProvider, WelcomeCoachmark } from "@/components/ui";
 import type { ApplicationShellProps } from "./ApplicationShell_types";
 import "@/tailwind/components/ApplicationShell/ApplicationShell.css";
 
@@ -92,7 +92,7 @@ export function ApplicationShell({ children }: ApplicationShellProps) {
             {children}
           </main>
           <CommandPalette open={paletteOpen} onClose={closePalette} onNavigate={navigate} />
-          <TourHelpButton />
+          <WelcomeCoachmark />
         </div>
       </TourProvider>
     </ShellContext.Provider>

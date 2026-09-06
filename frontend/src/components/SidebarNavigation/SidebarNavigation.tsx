@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useTheme } from "@/components/ThemeProvider";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { HelpMenu } from "@/components/ui";
 import { mockShellService } from "@/services/ShellService";
 import type { SidebarNavigationProps } from "./SidebarNavigation_types";
 
@@ -95,6 +96,7 @@ export function SidebarNavigation({
       </div>
 
       <footer className="no-sidebar-footer">
+        <HelpMenu />
         <div className="no-storage-line"><span className="no-status-dot no-status-ok" aria-hidden="true" />{applicationMeta.storage}</div>
         <div className="no-spend-line">Today <strong>{applicationMeta.spend}</strong><span>/ {applicationMeta.budget}</span></div>
         <div className="no-budget-track" aria-label={`${applicationMeta.budgetPercent}% of today's budget used`}><span style={{ width: `${applicationMeta.budgetPercent}%` }} /></div>
