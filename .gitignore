@@ -12,6 +12,8 @@ secrets/
 
 # Dependencies and build output
 node_modules/
+.next/
+*.tsbuildinfo
 dist/
 build/
 coverage/
@@ -37,6 +39,8 @@ temp/
 **/.cache/
 
 # Machine-local client state and credential-bearing overrides
+# Project MCP launch configuration is machine-specific and remains local-only.
+.mcp.json
 .codex/config.local.toml
 .codex/AGENTS.override.md
 .claude/settings.local.json
