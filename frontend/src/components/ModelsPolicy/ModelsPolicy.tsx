@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useCallback, useId } from "react";
-import { mockModelsPolicyService } from "@/services/ModelsPolicyService";
+import { useState, useEffect, useCallback, useId } from "react";
+import { mockModelsPolicyService, fetchProviders } from "@/services/ModelsPolicyService";
 import type { PolicyProvider, ProviderState, ProviderStateMap } from "./ModelsPolicy_types";
 
-const modelsPolicyData = mockModelsPolicyService.getProviders();
+// Routing options/labels are static UI display config (enums), not backend data.
 const ROUTING_OPTIONS = mockModelsPolicyService.getRoutingOptions();
 const ROUTING_PREFERENCE_LABELS = mockModelsPolicyService.getRoutingPreferenceLabels();
 import "@/tailwind/components/ModelsPolicy/ModelsPolicy.css";
@@ -240,8 +240,50 @@ function ProviderCard({
 }
 
 export function ModelsPolicy() {
+  const [providers, setProviders] = useState<PolicyProvider[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchProviders()
+      .then((data) => {
+        if (!cancelled) setProviders(data);
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : "Failed to load provider policies.");
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (error) {
+    return (
+      <div className="no-models-policy-page">
+        <div role="alert" className="no-policy-error">
+          <p>{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!providers) {
+    return (
+      <div className="no-models-policy-page" role="status" aria-label="Loading provider policies">
+        <p className="no-policy-loading">Loading provider policies…</p>
+      </div>
+    );
+  }
+
+  return <ModelsPolicyView providers={providers} />;
+}
+
+function ModelsPolicyView({ providers }: { providers: PolicyProvider[] }) {
+  const modelsPolicyData = providers;
   const [providerState, setProviderState] = useState<ProviderStateMap>(() =>
-    buildInitialState(modelsPolicyData),
+    buildInitialState(providers),
   );
 
   function patchProvider(prev: ProviderStateMap, id: string, patch: Partial<ProviderState>): ProviderStateMap {
