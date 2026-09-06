@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useId } from "react";
-import { mockHistoryService } from "@/services/HistoryService";
+import { useState, useEffect, useId } from "react";
+import { fetchRuns } from "@/services/HistoryService";
 import type {
   Run,
   RunHistoryProps,
@@ -227,8 +227,52 @@ function RunRow({
   );
 }
 
-export function RunHistory({ runs }: RunHistoryProps) {
-  const effectiveRuns = runs ?? mockHistoryService.getRuns();
+export function RunHistory({ runs: runsProp }: RunHistoryProps) {
+  const [runs, setRuns] = useState<Run[] | null>(runsProp ?? null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (runsProp) return;
+    let cancelled = false;
+    fetchRuns()
+      .then((data) => {
+        if (!cancelled) setRuns(data as Run[]);
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : "Failed to load run history.");
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [runsProp]);
+
+  if (error) {
+    return (
+      <main className="no-run-history" aria-label="Run history">
+        <div role="alert" className="no-run-error">
+          <p>{error}</p>
+        </div>
+      </main>
+    );
+  }
+
+  if (!runs) {
+    return (
+      <main className="no-run-history" aria-label="Run history">
+        <p className="no-run-loading" role="status" aria-label="Loading run history">
+          Loading run history…
+        </p>
+      </main>
+    );
+  }
+
+  return <RunHistoryView runs={runs} />;
+}
+
+function RunHistoryView({ runs }: { runs: Run[] }) {
+  const effectiveRuns = runs;
   const [activeFilter, setActiveFilter] = useState<FilterTab>("all");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
