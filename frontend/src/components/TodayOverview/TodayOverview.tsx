@@ -6,6 +6,7 @@ import { useShell } from "@/components/ApplicationShell";
 import { useTheme } from "@/components/ThemeProvider";
 import { fetchTodayData } from "@/services/TodayService";
 import type { TodayData } from "@/contracts/today";
+import { useScreenTour, TODAY_TOUR_KEY, TODAY_TOUR_STEPS } from "@/components/ui";
 import "@/tailwind/components/TodayOverview/TodayOverview.css";
 
 type ComingSoonActionProps = {
@@ -28,6 +29,7 @@ export function TodayOverview() {
   const { openPalette } = useShell();
   const [todayData, setTodayData] = useState<TodayData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  useScreenTour(TODAY_TOUR_KEY, TODAY_TOUR_STEPS);
 
   useEffect(() => {
     let cancelled = false;
@@ -87,7 +89,7 @@ export function TodayOverview() {
 
       <div className="no-today-body-grid">
         <div className="no-today-main-column">
-          <section className="no-today-section no-waiting-section" aria-labelledby="waiting-heading">
+          <section id="today-waiting" className="no-today-section no-waiting-section" aria-labelledby="waiting-heading">
             <div className="no-section-heading">
               <span className="no-section-status no-section-status-warn" aria-hidden="true" />
               <h2 id="waiting-heading">Waiting on you</h2>
@@ -108,7 +110,7 @@ export function TodayOverview() {
             </div>
           </section>
 
-          <section className="no-today-section" aria-labelledby="happening-heading">
+          <section id="today-run" className="no-today-section" aria-labelledby="happening-heading">
             <div className="no-section-heading">
               <span className="no-section-status no-section-status-live" aria-hidden="true" />
               <h2 id="happening-heading">Happening now</h2>
@@ -154,7 +156,7 @@ export function TodayOverview() {
         </div>
 
         <aside className="no-today-aside" aria-label="Workspace details">
-          <section>
+          <section id="today-sources">
             <div className="no-aside-heading">Sources right now</div>
             <div className="no-source-stack">
               {todayData.sources.map(([name, state, tone]) => <div className="no-source-row" key={name}><span className={`no-status-dot no-status-${tone}`} aria-hidden="true" /><span>{name}</span><span className={`no-source-state is-${tone}`}>{state}</span></div>)}

@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { fetchLiveRunData, type LiveRunData } from "@/services/RunService";
 import type { LiveRunLayout, StepState } from "./LiveRun_types";
+import { useScreenTour, LIVE_RUN_TOUR_KEY, LIVE_RUN_TOUR_STEPS } from "@/components/ui";
 import "@/tailwind/components/LiveRun/LiveRun.css";
 
 function stepStateLabel(state: StepState, isPaused: boolean): string {
@@ -20,7 +21,7 @@ function StepRail({
   isPaused: boolean;
 }) {
   return (
-    <ol className="no-live-run-rail" aria-label="Workflow steps">
+    <ol id="live-run-steps" className="no-live-run-rail" aria-label="Workflow steps">
       {steps.map((step) => {
         const displayState = stepStateLabel(step.state, isPaused);
         const isCurrent = step.index === activeIndex;
@@ -115,7 +116,7 @@ function KPIRow({ kpis }: { kpis: LiveRunData["kpis"] }) {
 
 function EventLedger({ events }: { events: LiveRunData["events"] }) {
   return (
-    <section className="no-live-ledger" aria-labelledby="ledger-heading">
+    <section id="live-run-ledger" className="no-live-ledger" aria-labelledby="ledger-heading">
       <h2 id="ledger-heading" className="no-ledger-heading">
         System event ledger
         <span className="no-ledger-note">Model notes are clearly labeled and separated from verified system facts.</span>
@@ -146,7 +147,7 @@ function EventLedger({ events }: { events: LiveRunData["events"] }) {
 
 function DecisionInspector({ decisions }: { decisions: LiveRunData["decisions"] }) {
   return (
-    <section className="no-live-decisions" aria-labelledby="decisions-heading">
+    <section id="live-run-decisions" className="no-live-decisions" aria-labelledby="decisions-heading">
       <h2 id="decisions-heading" className="no-decisions-heading">
         Pending decisions
       </h2>
@@ -198,6 +199,7 @@ function SimNotice({ label }: SimNoticeProps) {
 }
 
 export function LiveRun() {
+  useScreenTour(LIVE_RUN_TOUR_KEY, LIVE_RUN_TOUR_STEPS);
   const [data, setData] = useState<LiveRunData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPaused, setIsPaused] = useState(false);

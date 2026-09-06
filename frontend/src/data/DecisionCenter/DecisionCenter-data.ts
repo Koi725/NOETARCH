@@ -16,6 +16,7 @@ export const decisions: Decision[] = [
       "Screen locally with on-device model (free, ~8 minutes, lower accuracy)",
     ],
     status: "pending",
+    version: 1,
   },
   {
     id: "dec-002",
@@ -30,6 +31,7 @@ export const decisions: Decision[] = [
       "This file will be written to ~/NOETARCH/i5-0-review/evidence.candidates.csv. The file will be overwritten if it already exists. This action stays entirely on your device.",
     alternatives: [],
     status: "pending",
+    version: 1,
   },
   {
     id: "dec-003",
@@ -44,5 +46,6 @@ export const decisions: Decision[] = [
     alternatives: [],
     status: "rejected",
     rejectedAt: "14:08",
+    version: 1,
   },
 ];

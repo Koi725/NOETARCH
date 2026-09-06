@@ -1,7 +1,15 @@
 # NOETARCH Platform Overview
 
 **Audience:** the CEO and anyone who wants to understand the whole system in plain language.
-**Accurate as of:** M6 (2026-09-06). Written by reading the actual repository, not assumptions.
+**Accurate as of:** M10 (2026-09-06). Written by reading the actual repository, not assumptions.
+
+**What changed since M6:** the backend now serves all read surfaces from a real database
+(M7); the Decisions surface has a persisted approve/reject write path with an append-only
+audit trail (M8); the Evidence surface can fetch-and-freeze from an external source
+(OpenAlex) behind a default-OFF feature flag through a single SSRF-guarded egress client
+(M9); and the frontend ships an accessible onboarding tour + "explain this" tooltip kit with
+per-panel guided tours (M10). See `docs/frontend/M10_ONBOARDING.md` and the milestone THREAT
+notes for details.
 
 ---
 

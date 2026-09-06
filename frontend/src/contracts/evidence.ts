@@ -20,4 +20,6 @@ export interface EvidenceRecord {
   totalSources: number;
   missingDoi?: boolean;
   conflictNote?: string;
+  source?: "seed" | "openalex" | "crossref";
+  retrievedAt?: string | null;
 }

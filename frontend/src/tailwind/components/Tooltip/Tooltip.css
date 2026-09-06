@@ -1,0 +1,51 @@
+/* "Explain this" tooltip affordance. */
+.no-tip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.no-tip-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  border: 1px solid var(--no-color-border, #2a3040);
+  background: transparent;
+  color: inherit;
+  font-size: 11px;
+  line-height: 1;
+  cursor: help;
+  opacity: 0.8;
+}
+
+.no-tip-trigger:hover,
+.no-tip-trigger:focus-visible {
+  opacity: 1;
+}
+
+.no-tip-trigger:focus-visible {
+  outline: 2px solid var(--no-color-accent, #6ea8fe);
+  outline-offset: 2px;
+}
+
+.no-tip-bubble {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 950;
+  width: max-content;
+  max-width: 260px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  background: var(--no-color-surface, #161a22);
+  color: var(--no-color-text, #e7ecf3);
+  border: 1px solid var(--no-color-border, #2a3040);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+}

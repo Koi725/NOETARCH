@@ -6,14 +6,14 @@ import { EvidenceLibrary } from "@/components/EvidenceLibrary";
 import { RecipeLibrary } from "@/components/RecipeLibrary";
 
 describe("screens render through service seam", () => {
-  test("DecisionCenter renders decisions from mock service when no prop supplied", () => {
+  test("DecisionCenter renders decisions from mock service when no prop supplied", async () => {
     render(
       <ThemeProvider>
         <DecisionCenter />
       </ThemeProvider>
     );
     expect(screen.getByRole("main")).toBeInTheDocument();
-    expect(screen.getByText("Decisions")).toBeInTheDocument();
+    expect(await screen.findByText("Decisions")).toBeInTheDocument();
   });
 
   test("EvidenceLibrary shows loading state then renders records from mock service", async () => {

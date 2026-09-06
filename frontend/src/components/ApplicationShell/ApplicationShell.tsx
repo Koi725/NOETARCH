@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { CommandPalette } from "@/components/CommandPalette";
 import { RouteProgress } from "@/components/RouteProgress";
 import { SidebarNavigation } from "@/components/SidebarNavigation";
+import { TourProvider, TourHelpButton } from "@/components/ui";
 import type { ApplicationShellProps } from "./ApplicationShell_types";
 import "@/tailwind/components/ApplicationShell/ApplicationShell.css";
 
@@ -43,14 +44,17 @@ export function ApplicationShell({ children }: ApplicationShellProps) {
 
   return (
     <ShellContext.Provider value={{ openPalette }}>
-      <div className="no-application-shell">
-        <RouteProgress active={routing} />
-        <SidebarNavigation currentPath={pathname} onOpenPalette={openPalette} onNavigate={setRoutingTarget} />
-        <main className="no-shell-main">
-          {children}
-        </main>
-        <CommandPalette open={paletteOpen} onClose={closePalette} onNavigate={navigate} />
-      </div>
+      <TourProvider>
+        <div className="no-application-shell">
+          <RouteProgress active={routing} />
+          <SidebarNavigation currentPath={pathname} onOpenPalette={openPalette} onNavigate={setRoutingTarget} />
+          <main className="no-shell-main">
+            {children}
+          </main>
+          <CommandPalette open={paletteOpen} onClose={closePalette} onNavigate={navigate} />
+          <TourHelpButton />
+        </div>
+      </TourProvider>
     </ShellContext.Provider>
   );
 }

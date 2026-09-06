@@ -8,6 +8,12 @@ import {
   isRealBackend,
 } from "@/services/DecisionService";
 import type { AuditEntry } from "@/contracts/decision";
+import {
+  useScreenTour,
+  ExplainTip,
+  DECISIONS_TOUR_KEY,
+  DECISIONS_TOUR_STEPS,
+} from "@/components/ui";
 import type {
   Decision,
   DecisionActionType,
@@ -192,6 +198,7 @@ function DecisionCard({
 export function DecisionCenter({ decisions: decisionsProp }: DecisionCenterProps) {
   const [decisions, setDecisions] = useState<Decision[] | null>(decisionsProp ?? null);
   const [error, setError] = useState<string | null>(null);
+  useScreenTour(DECISIONS_TOUR_KEY, DECISIONS_TOUR_STEPS);
 
   useEffect(() => {
     if (decisionsProp) return;
@@ -289,14 +296,18 @@ function DecisionCenterView({ initialDecisions }: { initialDecisions: Decision[]
           {realBackend
             ? "Connected · your choices are saved to your local database and recorded in an audit trail. No external effects."
             : "Prototype · simulated · no backend"}
+          <ExplainTip
+            label="What does approving do?"
+            text="Approving records your intent with an audit trail. It does not yet trigger the underlying action — that is a separately-reviewed step."
+          />
         </p>
       </header>
 
-      <section aria-label="Pending decisions">
+      <section id="decisions-pending" aria-label="Pending decisions">
         <div className="no-decision-section-label">
           Pending · {pending.length} awaiting your decision
         </div>
-        <div className="no-decision-list">
+        <div id="decisions-first-actions" className="no-decision-list">
           {pending.map((d) => (
             <DecisionCard
               key={d.id}

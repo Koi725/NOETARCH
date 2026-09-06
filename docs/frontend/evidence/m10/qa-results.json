@@ -1,0 +1,74 @@
+{
+  "milestone": "M10",
+  "generatedAt": "2026-09-06",
+  "summary": "Onboarding tour + tooltip kit + final frontend QA. Automated gates green. Pixel screenshots require a live browser session (see limitation).",
+  "automatedGates": {
+    "lint": "pass",
+    "typeCheck": "pass",
+    "test": { "files": 23, "tests": 103, "status": "pass" },
+    "build": { "status": "pass", "routes": 12, "allStatic": true }
+  },
+  "newTests": {
+    "spotlight-tour": [
+      "accessible dialog (role=dialog, aria-modal) with title/explanation/step-count",
+      "screen-reader step announcement (role=status, aria-live)",
+      "next/back stepping",
+      "last step Done closes",
+      "keyboard: ArrowRight/ArrowLeft advance, Escape dismisses",
+      "Skip dismisses",
+      "reduced-motion sets data-reduced and steps instantly"
+    ],
+    "tour-kit": [
+      "shown-once storage (mark/read, localStorage-guarded)",
+      "first-run auto-runs once then never automatically",
+      "on-demand re-trigger via Show me around",
+      "ExplainTip tooltip a11y: role=tooltip on hover+focus, aria-describedby, Escape/blur dismiss"
+    ]
+  },
+  "accessibility": {
+    "tooltip": {
+      "role": "tooltip",
+      "triggers": ["hover", "focus"],
+      "dismiss": ["Escape", "blur", "mouseleave"],
+      "association": "aria-describedby links trigger to bubble"
+    },
+    "tour": {
+      "dialogRole": "dialog",
+      "ariaModal": true,
+      "labelledBy": "step title",
+      "describedBy": "step explanation",
+      "keyboard": ["ArrowRight next", "ArrowLeft back", "Escape close", "Tab focus-trap"],
+      "focusManagement": "focus moves into coachmark on open + each step; restored on close",
+      "srAnnouncement": "role=status aria-live polite: 'Step X of N: <title>'",
+      "reducedMotion": "no spotlight animation, instant steps when app motion OFF or prefers-reduced-motion",
+      "doesNotAriaHideApp": true
+    }
+  },
+  "tours": [
+    { "key": "today", "steps": 3, "targets": ["today-waiting", "today-run", "today-sources"] },
+    { "key": "live-run", "steps": 3, "targets": ["live-run-steps", "live-run-decisions", "live-run-ledger"] },
+    { "key": "decisions", "steps": 2, "targets": ["decisions-pending", "decisions-first-actions"] },
+    { "key": "evidence", "steps": 3, "targets": ["evidence-external-search", "evidence-filters", "evidence-list"] }
+  ],
+  "responsiveAudit": {
+    "method": "static CSS review (no browser available in this environment)",
+    "widthsToVerify": [1440, 820, 390],
+    "zoomToVerify": "200%",
+    "themes": ["obsidian (night)", "daylight (day)"],
+    "findings": {
+      "cssFilesWithMediaQueries": 15,
+      "newKitOverflowGuards": [
+        "coachmark width: min(440px, calc(100vw - 32px)); max-width: calc(100vw - 32px)",
+        "help button text hidden < 520px (icon-only) to avoid crowding",
+        "tooltip bubble max-width: 260px"
+      ],
+      "notes": "Kit elements are fixed/absolute overlays sized with viewport-relative caps, so they do not introduce horizontal overflow at any width."
+    }
+  },
+  "screenshots": {
+    "status": "not-captured-in-this-environment",
+    "reason": "No headless browser (Playwright/Puppeteer) is installed and installing one requires network egress, which is out of scope for this frontend-only milestone.",
+    "howToCapture": "Run `npm run dev`, then load each of the 12 routes at 1440/820/390px and 200% zoom in both themes and export PNGs into this directory.",
+    "manualChecklist": "See manual-qa-checklist.md in this directory."
+  }
+}

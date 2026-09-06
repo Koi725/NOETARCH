@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useTheme } from "@/components/ThemeProvider";
+import { useTour } from "@/components/ui";
 import { mockShellService } from "@/services/ShellService";
 import type { CommandPaletteProps } from "./CommandPalette_types";
 
@@ -13,6 +14,7 @@ export function CommandPalette({ open, onClose, onNavigate }: CommandPaletteProp
   const firstItemRef = useRef<HTMLButtonElement>(null);
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
   const { mode, setMode } = useTheme();
+  const { hasCurrentTour, startCurrentTour } = useTour();
   const firstAvailableIndex = paletteItems.findIndex((item) => item.available);
 
   useEffect(() => {
@@ -54,6 +56,19 @@ export function CommandPalette({ open, onClose, onNavigate }: CommandPaletteProp
           <button className="no-palette-close" type="button" onClick={onClose} aria-label="Close command palette">Esc</button>
         </div>
         <div className="no-palette-list">
+          {hasCurrentTour && (
+            <button
+              className="no-palette-item"
+              type="button"
+              onClick={() => {
+                startCurrentTour();
+                onClose();
+              }}
+            >
+              <span className="no-palette-item-label">Show me around</span>
+              <span className="no-palette-item-hint">Tour this screen</span>
+            </button>
+          )}
           {paletteItems.map((item, index) => (
             <button
               ref={index === firstAvailableIndex ? firstItemRef : undefined}

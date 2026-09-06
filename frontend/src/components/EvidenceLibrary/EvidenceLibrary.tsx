@@ -11,6 +11,7 @@ import type {
   EvidenceFilter,
   EvidenceSource,
 } from "./EvidenceLibrary_types";
+import { useScreenTour, EVIDENCE_TOUR_KEY, EVIDENCE_TOUR_STEPS } from "@/components/ui";
 import "@/tailwind/components/EvidenceLibrary/EvidenceLibrary.css";
 
 const FILTERS: { value: EvidenceFilter; label: string }[] = [
@@ -178,6 +179,7 @@ export function EvidenceLibrary() {
   const [searching, setSearching] = useState(false);
   const [searchStatus, setSearchStatus] = useState<EvidenceSearchResult | null>(null);
   const [searchError, setSearchError] = useState<string | null>(null);
+  useScreenTour(EVIDENCE_TOUR_KEY, EVIDENCE_TOUR_STEPS);
 
   const handleExternalSearch = useCallback(
     async (e: React.FormEvent) => {
@@ -307,6 +309,7 @@ export function EvidenceLibrary() {
 
         {/* External source fetch (OpenAlex) — off in mock mode / when the flag is disabled */}
         <form
+          id="evidence-external-search"
           className="no-ev-external-search"
           onSubmit={handleExternalSearch}
           aria-label="Search external sources"
@@ -347,7 +350,7 @@ export function EvidenceLibrary() {
           </p>
         )}
 
-        <div className="no-ev-filter-chips" role="group" aria-label="Filter records">
+        <div id="evidence-filters" className="no-ev-filter-chips" role="group" aria-label="Filter records">
           {FILTERS.map((f) => (
             <button
               key={f.value}
@@ -366,7 +369,7 @@ export function EvidenceLibrary() {
       {/* Body */}
       <div className={`no-ev-body${selected ? " has-inspector" : ""}`}>
         {/* Record list */}
-        <div className="no-ev-list-col" role="region" aria-label="Evidence records list">
+        <div id="evidence-list" className="no-ev-list-col" role="region" aria-label="Evidence records list">
           <div
             className="no-ev-count"
             role="status"
