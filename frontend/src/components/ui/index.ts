@@ -3,7 +3,9 @@ export { SpotlightTour } from "./SpotlightTour";
 export { computeCoachmarkPosition } from "./tour-position";
 export type { Box, Size, Viewport, CoachmarkPosition, Placement } from "./tour-position";
 export { useScreenTour } from "./useScreenTour";
-export { ExplainTip, TourHelpButton } from "./Tooltip";
+export { ExplainTip } from "./Tooltip";
+export { HelpMenu } from "./HelpMenu";
+export { WelcomeCoachmark } from "./WelcomeCoachmark";
 export { hasSeenTour, markTourSeen, resetTourSeen } from "./tour-storage";
 export {
   EvidenceListSkeleton,
