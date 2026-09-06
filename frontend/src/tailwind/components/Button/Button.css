@@ -1,0 +1,83 @@
+.button {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  border: 1px solid var(--btnline);
+  border-radius: 0;
+  padding: 0 14px;
+  color: var(--ink);
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  text-align: left;
+  transition: border-color 160ms ease, background-color 160ms ease, color 160ms ease;
+}
+
+.button--small {
+  min-height: 32px;
+  padding: 0 10px;
+  font-size: 12px;
+}
+
+.button--medium {
+  min-height: 40px;
+}
+
+.button--primary {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-family: var(--font-heading);
+  font-weight: 800;
+}
+
+.button--secondary {
+  background: var(--panel);
+}
+
+.button--danger {
+  border-color: var(--bad);
+  background: var(--bad-bg);
+  color: var(--bad-text);
+}
+
+.button:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--hover);
+  color: var(--ink);
+}
+
+.button--primary:hover:not(:disabled) {
+  background: var(--accent-text);
+  color: var(--accent-ink);
+}
+
+.button--danger:hover:not(:disabled) {
+  border-color: var(--bad-text);
+  background: var(--bad);
+  color: var(--accent-ink);
+}
+
+.button:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.button__spinner {
+  width: 12px;
+  height: 12px;
+  flex: 0 0 12px;
+  border: 2px solid var(--line);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: noSpin 0.8s linear infinite;
+}
