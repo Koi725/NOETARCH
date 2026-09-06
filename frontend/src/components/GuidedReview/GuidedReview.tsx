@@ -1,22 +1,13 @@
 "use client";
 
 import { useState, useCallback, useEffect, useId } from "react";
-import { mockGuidedReviewService } from "@/services/GuidedReviewService";
+import { fetchReviewData, type GuidedReviewData } from "@/services/GuidedReviewService";
 import type {
   Decision,
   HistoryEntry,
   ReviewPaper,
 } from "./GuidedReview_types";
 import "@/tailwind/components/GuidedReview/GuidedReview.css";
-
-const {
-  project: guidedReviewProject,
-  progress: reviewProgress,
-  currentPaper,
-  nextPapers,
-  excludeReasons,
-  previousDecisions,
-} = mockGuidedReviewService.getReviewData();
 
 function decisionLabel(d: Exclude<Decision, null>): string {
   if (d === "include") return "Include";
@@ -43,6 +34,56 @@ type ReviewState = {
 };
 
 export function GuidedReview() {
+  const [data, setData] = useState<GuidedReviewData | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchReviewData()
+      .then((d) => {
+        if (!cancelled) setData(d);
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : "Failed to load the review.");
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (error) {
+    return (
+      <div className="no-gr-page">
+        <div role="alert" className="no-gr-error">
+          <p>{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className="no-gr-page" role="status" aria-label="Loading the review">
+        <p className="no-gr-loading">Loading the review…</p>
+      </div>
+    );
+  }
+
+  return <GuidedReviewView data={data} />;
+}
+
+function GuidedReviewView({ data }: { data: GuidedReviewData }) {
+  const {
+    project: guidedReviewProject,
+    progress: reviewProgress,
+    currentPaper,
+    nextPapers,
+    excludeReasons,
+    previousDecisions,
+  } = data;
+
   const abstractId = useId();
   const doiId = useId();
 
@@ -94,7 +135,7 @@ export function GuidedReview() {
         nextPaperIndex: (s.nextPaperIndex + 1) % nextPapers.length,
       };
     });
-  }, []);
+  }, [nextPapers]);
 
   const undo = useCallback(() => {
     setState((s) => {
@@ -110,7 +151,7 @@ export function GuidedReview() {
         confirmed: false,
       };
     });
-  }, []);
+  }, [reviewProgress.reviewed, currentPaper]);
 
   // Keyboard bindings
   useEffect(() => {
