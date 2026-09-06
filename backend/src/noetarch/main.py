@@ -4,12 +4,15 @@ from collections.abc import Awaitable, Callable
 
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from noetarch.api.errors import http_exception_handler
 from noetarch.api.router import api_router
 from noetarch.core.config import get_settings
 from noetarch.core.logging import configure_logging
+
+_MAX_REQUEST_BODY_BYTES = 1 * 1024 * 1024  # 1 MiB
 
 
 def create_app() -> FastAPI:
@@ -25,6 +28,28 @@ def create_app() -> FastAPI:
         allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
         allow_headers=["*"],
     )
+
+    @app.middleware("http")
+    async def limit_request_body(
+        request: Request, call_next: Callable[[Request], Awaitable[Response]]
+    ) -> Response:
+        content_length_raw = request.headers.get("content-length")
+        if content_length_raw is not None:
+            try:
+                if int(content_length_raw) > _MAX_REQUEST_BODY_BYTES:
+                    return JSONResponse(
+                        status_code=413,
+                        content={
+                            "error": {
+                                "code": 413,
+                                "message": "Request entity too large.",
+                                "request_id": None,
+                            }
+                        },
+                    )
+            except ValueError:
+                pass
+        return await call_next(request)
 
     @app.middleware("http")
     async def add_request_id(
