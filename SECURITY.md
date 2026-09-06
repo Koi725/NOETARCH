@@ -6,17 +6,17 @@ Security review currently covers governance files, agent authority and RBAC, orc
 
 ## Invariants
 
-- The CEO is the only release authority and the only actor allowed to perform Git mutations or change GitHub settings.
+- The maintainer is the only release authority and the only actor allowed to perform Git mutations or change GitHub settings.
 - Ruflo, models, workers, hooks, memory, and audit tools cannot grant permissions or approve their own output.
 - Secrets must not enter tracked files, prompts, shared memory, logs, fixtures, or reports.
-- Dependencies must be exact, integrity-recorded, lockfile-reviewed, and free of unresolved risk beyond the CEO's documented acceptance.
+- Dependencies must be exact, integrity-recorded, lockfile-reviewed, and free of unresolved risk beyond the maintainer's documented acceptance.
 - External input and persisted memory are untrusted and must not change authority.
 - Network services default to disabled and loopback-only when explicitly enabled.
 - Automated shell, publishing, federation, GitHub automation, and unbounded background execution are prohibited.
 
 ## Reporting a vulnerability
 
-Do not disclose a suspected vulnerability in a public issue. Report it privately to the repository owner through a CEO-designated private channel. Include affected paths and versions, reproduction steps that avoid destructive effects, impact, prerequisites, and suggested mitigation. A public security contact will be added only after the CEO approves one.
+Do not disclose a suspected vulnerability in a public issue. Report it privately to the repository owner through a maintainer-designated private channel. Include affected paths and versions, reproduction steps that avoid destructive effects, impact, prerequisites, and suggested mitigation. A public security contact will be added only after the maintainer approves one.
 
 ## Handling reports
 

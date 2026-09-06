@@ -1,6 +1,6 @@
 # NOETARCH frontend
 
-The CEO initially authorized M0 and M1 on 2026-09-05. M2 implementation crossed the intended M1 stop and was identified during a recovery audit. After reviewing that audit, the CEO prospectively authorized M2 completion and remediation. This was not retroactive authorization. M3 was explicitly authorized on 2026-09-06 and is now complete.
+The maintainer initially authorized M0 and M1 on 2026-09-05. M2 implementation crossed the intended M1 stop and was identified during a recovery audit. After reviewing that audit, the maintainer prospectively authorized M2 completion and remediation. This was not retroactive authorization. M3 was explicitly authorized on 2026-09-06 and is now complete.
 
 This directory contains the completed and validated M0-M3 local-first interface. Backend integration, real API calls, desktop-shell packaging, and product-domain workflows remain blocked until separately authorized.
 
@@ -52,4 +52,4 @@ The M3 checkpoint passes lint, strict type-check, 7 files/37 tests, production b
 
 M2 Chromium evidence is in `docs/frontend/evidence/m2/` and `docs/frontend/M2_ACCESSIBILITY.md`. M3 static-analysis evidence is in `docs/frontend/evidence/m3/qa-results.json`. M3 implementation details and accessibility inventory are in `docs/frontend/M3_IMPLEMENTATION.md` and `docs/frontend/M3_ACCESSIBILITY.md`.
 
-Live browser QA for M3 requires `npm run dev` — screenshots were not captured to avoid leaving background processes. The CEO should verify each route visually.
+Live browser QA for M3 requires `npm run dev` — screenshots were not captured to avoid leaving background processes. The maintainer should verify each route visually.

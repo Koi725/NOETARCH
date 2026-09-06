@@ -9,5 +9,5 @@ Contributions are welcome once they respect the current governance-only phase.
 5. Use the task, report, decision, and handoff templates under `agents/templates/`.
 6. Report security concerns privately as described in `SECURITY.md`.
 
-Agents may prepare changes but may not commit, push, merge, tag, release, delete branches, or change remotes. The CEO controls all Git mutations and decides whether a contribution is accepted.
+Agents may prepare changes but may not commit, push, merge, tag, release, delete branches, or change remotes. The maintainer controls all Git mutations and decides whether a contribution is accepted.
 

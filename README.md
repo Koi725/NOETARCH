@@ -59,9 +59,9 @@ This repository currently contains governance, agent roles, RBAC, coordination p
 
 ## Ruflo status
 
-Ruflo is not installed in this repository. The evaluated release is pinned in `orchestration/ruflo/VERSION.md`; activation is blocked pending dependency remediation and CEO approval. Do not run an unpinned initializer here.
+Ruflo is not installed in this repository. The evaluated release is pinned in `orchestration/ruflo/VERSION.md`; activation is blocked pending dependency remediation and maintainer approval. Do not run an unpinned initializer here.
 
 ## Contribution and security
 
-See `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, and `SECURITY.md`. The project license is intentionally not assumed; the CEO must select and add one before the first public release.
+See `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, and `SECURITY.md`. The project license is intentionally not assumed; the maintainer must select and add one before the first public release.
 

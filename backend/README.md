@@ -20,6 +20,6 @@ Health checks: `GET /api/v1/health/live` and `GET /api/v1/health/ready`.
 
 ## Scope note
 Foundation scaffold only — **no domain models or endpoints yet** (awaiting SRS +
-CEO authorization per the Backend Charter). `database/` and `modules/` are
+maintainer authorization per the Backend Charter). `database/` and `modules/` are
 intentionally omitted until the first confirmed domain, to avoid empty
 architecture for appearance.

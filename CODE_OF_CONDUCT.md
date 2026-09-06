@@ -4,5 +4,5 @@ NOETARCH contributors must communicate professionally, critique ideas rather tha
 
 Technical disagreement must be evidence-based and follow `agents/protocols/CONFLICT_RESOLUTION.md`. Authority rules do not permit abusive conduct or suppression of good-faith security reports.
 
-Report conduct concerns privately to the repository owner through a CEO-designated channel. The CEO determines proportionate corrective action. Do not publish private reports or personal information without authorization.
+Report conduct concerns privately to the repository owner through a maintainer-designated channel. The maintainer determines proportionate corrective action. Do not publish private reports or personal information without authorization.
 
