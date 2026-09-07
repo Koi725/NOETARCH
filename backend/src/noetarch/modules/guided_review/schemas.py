@@ -50,3 +50,31 @@ class GuidedReviewData(BaseModel):
     nextPapers: list[ReviewPaper]  # noqa: N815
     excludeReasons: list[ExcludeReason]  # noqa: N815
     previousDecisions: list[ReviewHistoryEntry]  # noqa: N815
+
+    @classmethod
+    def empty(cls) -> "GuidedReviewData":
+        """Well-formed empty state for an unseeded ("real mode") database.
+
+        Every field is present and correctly typed; the current paper carries blank
+        defaults and the lists are empty. The frontend detects this shape (blank
+        current-paper id / zero total) and renders an intentional empty state.
+        """
+        return cls(
+            project="",
+            progress=ReviewProgress(reviewed=0, total=0, remaining=0),
+            currentPaper=ReviewPaper(
+                id="",
+                index=0,
+                title="",
+                authors="",
+                year=0,
+                journal="",
+                doi="",
+                abstract="",
+                initialStatus=None,
+                initialStatusNote=None,
+            ),
+            nextPapers=[],
+            excludeReasons=[],
+            previousDecisions=[],
+        )

@@ -13,7 +13,10 @@ class GuidedReviewRepository:
     def get_current(self) -> GuidedReviewData:
         row = self._session.execute(
             select(GuidedReviewSnapshotORM).order_by(GuidedReviewSnapshotORM.id).limit(1)
-        ).scalar_one()
+        ).scalar_one_or_none()
+        if row is None:
+            # Unseeded / real mode: return a valid empty review state, never crash.
+            return GuidedReviewData.empty()
         return GuidedReviewData.model_validate(
             {
                 "project": row.project,

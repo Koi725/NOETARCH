@@ -13,7 +13,10 @@ class LiveRunRepository:
     def get_active(self) -> LiveRunData:
         row = self._session.execute(
             select(LiveRunSnapshotORM).order_by(LiveRunSnapshotORM.id).limit(1)
-        ).scalar_one()
+        ).scalar_one_or_none()
+        if row is None:
+            # Unseeded / real mode: return a valid "no active run" snapshot, never crash.
+            return LiveRunData.empty()
         return LiveRunData.model_validate(
             {
                 "meta": row.meta,

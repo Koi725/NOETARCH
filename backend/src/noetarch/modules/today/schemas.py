@@ -41,3 +41,22 @@ class TodayData(BaseModel):
     finished: list[TodayFinishedTuple]
     sources: list[TodaySourceTuple]
     files: list[TodayFileTuple]
+
+    @classmethod
+    def empty(cls) -> "TodayData":
+        """Well-formed empty snapshot for an unseeded ("real mode") database.
+
+        Every field is present and correctly typed; nested objects carry blank
+        defaults and the lists are empty. The frontend detects this shape and renders
+        an intentional empty state instead of blank content.
+        """
+        return cls(
+            project="",
+            question="",
+            waiting=TodayWaiting(title="", detail="", next=""),
+            run=TodayRun(title="", meta="", current="", progress=0, kpis=[]),
+            failure=TodayFailure(title="", body=""),
+            finished=[],
+            sources=[],
+            files=[],
+        )

@@ -72,3 +72,29 @@ class LiveRunData(BaseModel):
     events: list[RunEvent]
     decisions: list[LiveRunDecision]
     evidenceCards: list[LiveRunEvidenceCard]  # noqa: N815
+
+    @classmethod
+    def empty(cls) -> "LiveRunData":
+        """Well-formed empty snapshot for an unseeded ("real mode") database.
+
+        Every field is present and correctly typed; nested objects carry blank
+        defaults and the lists are empty. The frontend detects this shape (no steps /
+        blank run id) and renders an intentional "no active run" empty state.
+        """
+        return cls(
+            meta=RunMeta(runId="", title="", started="", elapsed=""),
+            steps=[],
+            stepInspector=StepInspector(
+                stepIndex=0,
+                label="",
+                method="",
+                locality="",
+                status="",
+                input="",
+                outputSoFar="",
+            ),
+            kpis=[],
+            events=[],
+            decisions=[],
+            evidenceCards=[],
+        )

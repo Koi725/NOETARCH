@@ -13,7 +13,10 @@ class TodayRepository:
     def get(self) -> TodayData:
         row = self._session.execute(
             select(TodaySnapshotORM).order_by(TodaySnapshotORM.id).limit(1)
-        ).scalar_one()
+        ).scalar_one_or_none()
+        if row is None:
+            # Unseeded / real mode: return a valid empty snapshot, never crash.
+            return TodayData.empty()
         return TodayData.model_validate(
             {
                 "project": row.project,
