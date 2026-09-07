@@ -46,3 +46,31 @@ a:focus-visible,
   background: var(--accent);
   color: var(--accent-ink);
 }
+
+/* Shared run-scoped deep-link banner (Evidence + Decisions filtered to a run). */
+.no-run-filter-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 12px 0 4px;
+  padding: 9px 13px;
+  border: 1px solid var(--accent-soft);
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  border-radius: 9px;
+  font-size: 13px;
+}
+
+.no-run-filter-banner code {
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.no-run-filter-clear {
+  color: var(--accent-text);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

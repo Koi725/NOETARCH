@@ -1,0 +1,29 @@
+/* Brief splash shown while the onboarding gate checks credential status. */
+.no-gate-splash {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+}
+
+.no-gate-spinner {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2.5px solid var(--line2);
+  border-top-color: var(--accent);
+  animation: no-gate-spin 0.7s linear infinite;
+}
+
+@keyframes no-gate-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .no-gate-spinner {
+    animation-duration: 2.4s;
+  }
+}

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useId } from "react";
 import { mockModelsPolicyService, fetchProviders } from "@/services/ModelsPolicyService";
+import { CredentialsPanel } from "./CredentialsPanel";
 import type { PolicyProvider, ProviderState, ProviderStateMap } from "./ModelsPolicy_types";
 
 // Routing options/labels are static UI display config (enums), not backend data.
@@ -334,20 +335,14 @@ function ModelsPolicyView({ providers }: { providers: PolicyProvider[] }) {
           <h1>Models and policy</h1>
           <p>
             Control which AI providers NOETARCH may use, how much they may cost, and what data they
-            may receive. No credential inputs — add API keys via your shell environment.
+            may receive. Your provider key lives in an encrypted local vault — connect, rotate, or
+            remove it below.
           </p>
-        </div>
-        <div className="no-prototype-notice" role="note">
-          Prototype · Mock data
         </div>
       </header>
 
       <div className="no-models-policy-body">
-        <div id="policy-credentials" className="no-policy-credential-notice" role="note">
-          <strong>API credentials are not managed here.</strong> Set environment variables in your
-          shell (e.g. <code>ANTHROPIC_API_KEY</code>) — NOETARCH reads them at startup and never
-          stores them.
-        </div>
+        <CredentialsPanel />
 
         <div id="policy-providers" className="no-policy-provider-list" role="list" aria-label="AI provider policies">
           {modelsPolicyData.map((provider) => {

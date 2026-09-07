@@ -1,0 +1,191 @@
+/* Onboarding key gate — the first screen a new user sees. Full-screen centered card;
+   reuses shared button/eyebrow classes for visual consistency with the rest of the app. */
+
+.no-connect-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px;
+  background: var(--bg);
+}
+
+.no-connect-page.is-standalone {
+  min-height: auto;
+  padding: 8px 0;
+  justify-content: flex-start;
+}
+
+.no-connect-card {
+  width: 100%;
+  max-width: 560px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 30px 30px 26px;
+  box-shadow: var(--raise);
+}
+
+.no-connect-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.no-connect-brand-name {
+  font: 800 14px/1 var(--font-heading);
+  letter-spacing: 0.12em;
+}
+
+.no-connect-title {
+  font: 800 25px/1.15 var(--font-heading);
+  margin: 6px 0 10px;
+}
+
+.no-connect-lede {
+  color: var(--ink3);
+  font-size: 14px;
+  line-height: 1.55;
+  margin: 0 0 20px;
+}
+
+.no-connect-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.no-connect-label {
+  font: 600 12.5px/1 var(--font-heading);
+  color: var(--ink2);
+}
+
+.no-connect-input-row {
+  display: flex;
+  gap: 8px;
+}
+
+.no-connect-input {
+  flex: 1;
+  min-height: 44px;
+  padding: 11px 13px;
+  border: 1px solid var(--line2);
+  border-radius: 9px;
+  background: var(--panel2);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+  letter-spacing: 0.02em;
+}
+
+.no-connect-input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.no-connect-reveal {
+  min-height: 44px;
+  white-space: nowrap;
+}
+
+.no-connect-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 6px;
+}
+
+.no-connect-skip {
+  background: none;
+  border: none;
+  color: var(--ink3);
+  cursor: pointer;
+  font-size: 13px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  padding: 6px 2px;
+}
+
+.no-connect-skip:hover {
+  color: var(--ink2);
+}
+
+.no-connect-error {
+  color: var(--bad-text);
+  background: var(--bad-bg);
+  border: 1px solid var(--bad-line);
+  border-radius: 8px;
+  padding: 9px 11px;
+  font-size: 13px;
+  margin: 2px 0 0;
+}
+
+.no-connect-vault-error {
+  background: var(--warn-bg);
+  border: 1px solid var(--warn-line);
+  color: var(--warn-text);
+  border-radius: 9px;
+  padding: 12px 14px;
+  margin: 0 0 18px;
+  font-size: 13px;
+}
+
+.no-connect-vault-error strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.no-connect-vault-hint {
+  margin: 6px 0 0;
+  opacity: 0.85;
+}
+
+.no-connect-configured {
+  background: var(--ok-bg);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 14px 16px;
+  margin: 0 0 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.no-connect-configured .no-primary-button {
+  border-radius: 8px;
+}
+
+.no-connect-masked,
+.no-connect-rotate-note {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+}
+
+.no-connect-rotate-note {
+  color: var(--ink3);
+  font-family: var(--font-body);
+}
+
+.no-connect-security-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 22px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  color: var(--ink3);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.no-connect-lock {
+  width: 9px;
+  height: 9px;
+  margin-top: 4px;
+  border-radius: 2px;
+  background: var(--ok);
+  flex-shrink: 0;
+}
