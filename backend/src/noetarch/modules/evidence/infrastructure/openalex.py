@@ -54,6 +54,26 @@ class OpenAlexWork(BaseModel):
     publication_year: int | None = None
     authorships: list[_OpenAlexAuthorship] = Field(default_factory=list)
     primary_location: _OpenAlexLocation | None = None
+    abstract_inverted_index: dict[str, list[int]] | None = None
+
+
+MAX_ABSTRACT = 8000
+
+
+def _reconstruct_abstract(inverted: dict[str, list[int]] | None) -> str:
+    """Rebuild abstract text from OpenAlex's inverted index (word -> positions).
+
+    The result is untrusted data: it is only ever passed to the screener as delimited
+    DATA and stored as a provenance-tagged claim — never executed or interpreted.
+    """
+    if not inverted:
+        return ""
+    positioned: list[tuple[int, str]] = []
+    for word, positions in inverted.items():
+        for pos in positions:
+            positioned.append((pos, word))
+    positioned.sort(key=lambda pair: pair[0])
+    return " ".join(word for _, word in positioned)[:MAX_ABSTRACT]
 
 
 class OpenAlexResponse(BaseModel):
@@ -97,6 +117,33 @@ class OpenAlexProvider:
         parsed = OpenAlexResponse.model_validate(raw)  # drops unexpected fields
         retrieved_at = datetime.now(tz=UTC).isoformat()
         return [self._to_record(work, retrieved_at) for work in parsed.results[:MAX_RESULTS]]
+
+    def search_with_abstracts(self, query: str) -> list[tuple[EvidenceRecord, str]]:
+        """Like :meth:`search` but also returns each paper's reconstructed abstract.
+
+        Used by the run executor for screening. Fetches ``abstract_inverted_index`` in
+        addition to the base fields; the reconstructed abstract is untrusted data.
+        """
+        params: dict[str, str] = {
+            "search": query,
+            "per_page": "25",
+            "select": (
+                "id,doi,title,display_name,publication_year,authorships,"
+                "primary_location,abstract_inverted_index"
+            ),
+        }
+        if self._contact_email:
+            params["mailto"] = self._contact_email
+
+        raw = self._egress.get_json(host=OPENALEX_HOST, path=OPENALEX_PATH, params=params)
+        parsed = OpenAlexResponse.model_validate(raw)
+        retrieved_at = datetime.now(tz=UTC).isoformat()
+        out: list[tuple[EvidenceRecord, str]] = []
+        for work in parsed.results[:MAX_RESULTS]:
+            record = self._to_record(work, retrieved_at)
+            abstract = _reconstruct_abstract(work.abstract_inverted_index)
+            out.append((record, abstract))
+        return out
 
     @staticmethod
     def _to_record(work: OpenAlexWork, retrieved_at: str) -> EvidenceRecord:
