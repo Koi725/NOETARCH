@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useId } from "react";
+import Link from "next/link";
 import { ShieldCheck, ShieldAlert, AlertTriangle, Check, X, Upload } from "lucide-react";
 import {
   fetchDecisions,
@@ -212,7 +213,7 @@ function DecisionCard({
   );
 }
 
-export function DecisionCenter({ decisions: decisionsProp }: DecisionCenterProps) {
+export function DecisionCenter({ decisions: decisionsProp, runId }: DecisionCenterProps) {
   const [decisions, setDecisions] = useState<Decision[] | null>(decisionsProp ?? null);
   const [error, setError] = useState<string | null>(null);
   useScreenTour(DECISIONS_TOUR_KEY, DECISIONS_TOUR_STEPS);
@@ -220,7 +221,7 @@ export function DecisionCenter({ decisions: decisionsProp }: DecisionCenterProps
   useEffect(() => {
     if (decisionsProp) return;
     let cancelled = false;
-    fetchDecisions()
+    fetchDecisions(runId)
       .then((data) => {
         if (!cancelled) setDecisions(data);
       })
@@ -232,7 +233,7 @@ export function DecisionCenter({ decisions: decisionsProp }: DecisionCenterProps
     return () => {
       cancelled = true;
     };
-  }, [decisionsProp]);
+  }, [decisionsProp, runId]);
 
   if (error) {
     return (
@@ -254,10 +255,16 @@ export function DecisionCenter({ decisions: decisionsProp }: DecisionCenterProps
     );
   }
 
-  return <DecisionCenterView initialDecisions={decisions} />;
+  return <DecisionCenterView initialDecisions={decisions} runId={runId} />;
 }
 
-function DecisionCenterView({ initialDecisions }: { initialDecisions: Decision[] }) {
+function DecisionCenterView({
+  initialDecisions,
+  runId,
+}: {
+  initialDecisions: Decision[];
+  runId?: string;
+}) {
   const realBackend = isRealBackend();
   const [decisions, setDecisions] = useState<Decision[]>(initialDecisions);
   const [uiState, setUiState] = useState<Record<string, CardUi>>({});
@@ -318,6 +325,16 @@ function DecisionCenterView({ initialDecisions }: { initialDecisions: Decision[]
             text="Approving records your intent with an audit trail. It does not yet trigger the underlying action — that is a separately-reviewed step."
           />
         </p>
+        {runId && (
+          <div className="no-run-filter-banner" role="status">
+            <span>
+              Showing decisions from run <code>{runId}</code>.
+            </span>
+            <Link className="no-run-filter-clear" href="/decisions">
+              Clear filter
+            </Link>
+          </div>
+        )}
       </header>
 
       <section id="decisions-pending" aria-label="Pending decisions">
@@ -337,7 +354,9 @@ function DecisionCenterView({ initialDecisions }: { initialDecisions: Decision[]
           {pending.length === 0 && (
             <p className="no-decision-empty">
               {decisions.length === 0
-                ? "No decisions yet — they appear here when a run needs your call."
+                ? runId
+                  ? "This run produced no decisions."
+                  : "No decisions yet — they appear here when a run needs your call."
                 : "No pending decisions."}
             </p>
           )}

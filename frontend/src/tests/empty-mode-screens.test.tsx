@@ -88,14 +88,17 @@ describe("Real/empty mode — screens render an intentional empty state, not a s
     );
   });
 
-  test("LiveRun shows the no-active-run empty state", async () => {
+  test("LiveRun shows the run launcher (new-run form) as its idle state", async () => {
     stubEmptyFetch(EMPTY_LIVE_RUN);
     render(
       <ThemeProvider>
         <LiveRun />
       </ThemeProvider>,
     );
-    expect(await screen.findByRole("heading", { name: "No run is active" })).toBeInTheDocument();
+    // The launcher is the idle state: a "Start a new run" form, not a skeleton.
+    expect(await screen.findByRole("heading", { name: "Start a new run" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Research question")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Start run" })).toBeInTheDocument();
     await waitFor(() =>
       expect(
         screen.queryByRole("status", { name: "Loading the active run" }),

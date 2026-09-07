@@ -1,416 +1,355 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useId, useState } from "react";
 import Link from "next/link";
-import { fetchLiveRunData, type LiveRunData } from "@/services/RunService";
-import type { LiveRunLayout, StepState } from "./LiveRun_types";
-import { useScreenTour, LiveRunSkeleton, LIVE_RUN_TOUR_KEY, LIVE_RUN_TOUR_STEPS } from "@/components/ui";
+import { RunUnavailableError, startRun } from "@/services/RunService";
+import type { RunExecutionStatus, RunRequestInput, RunResult } from "@/contracts/run";
+import { useScreenTour, LIVE_RUN_TOUR_KEY, LIVE_RUN_TOUR_STEPS } from "@/components/ui";
 import "@/tailwind/components/LiveRun/LiveRun.css";
+import "@/tailwind/components/LiveRunLauncher/LiveRunLauncher.css";
 
-// Explicit fetch state so we render skeleton only while loading — never for empty data.
-type LoadStatus = "loading" | "ready" | "error";
+type Phase = "form" | "running" | "done" | "error";
 
-function stepStateLabel(state: StepState, isPaused: boolean): string {
-  if (state === "running" && isPaused) return "paused";
-  return state;
+interface FormValues {
+  question: string;
+  yearFrom: string;
+  yearTo: string;
+  maxResults: string;
+  budget: string;
 }
 
-function StepRail({
-  steps,
-  activeIndex,
-  isPaused,
-}: {
-  steps: LiveRunData["steps"];
-  activeIndex: number;
-  isPaused: boolean;
-}) {
-  return (
-    <ol id="live-run-steps" className="no-live-run-rail" aria-label="Workflow steps">
-      {steps.map((step) => {
-        const displayState = stepStateLabel(step.state, isPaused);
-        const isCurrent = step.index === activeIndex;
-        return (
-          <li
-            key={step.index}
-            className={`no-live-run-step is-${displayState}${isCurrent ? " is-current" : ""}`}
-            aria-current={isCurrent ? "step" : undefined}
-          >
-            <span className="no-live-step-marker" aria-hidden="true">
-              {step.state === "done" || step.state === "partial" ? (
-                <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true">
-                  <polyline points="2,5 4.2,7.5 8,2.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              ) : (
-                <span>{step.index}</span>
-              )}
-            </span>
-            <span className="no-live-step-label">
-              {step.label}
-              {step.note && (
-                <span className="no-live-step-note">{step.note}</span>
-              )}
-            </span>
-            {step.state === "running" && !isPaused && (
-              <span className="no-live-step-spinner" aria-hidden="true" />
-            )}
-          </li>
-        );
-      })}
-    </ol>
+const INITIAL_FORM: FormValues = {
+  question: "",
+  yearFrom: "",
+  yearTo: "",
+  maxResults: "50",
+  budget: "",
+};
+
+const STATUS_LABEL: Record<RunExecutionStatus, string> = {
+  completed: "Completed",
+  halted_budget: "Stopped at budget cap",
+  failed: "Failed",
+  no_provider: "No provider key",
+  external_sources_disabled: "External sources off",
+};
+
+function toIntOrNull(value: string): number | null {
+  const trimmed = value.trim();
+  if (trimmed === "") return null;
+  const n = Number.parseInt(trimmed, 10);
+  return Number.isFinite(n) ? n : null;
+}
+
+function toFloatOrNull(value: string): number | null {
+  const trimmed = value.trim();
+  if (trimmed === "") return null;
+  const n = Number.parseFloat(trimmed);
+  return Number.isFinite(n) ? n : null;
+}
+
+/** The core new piece: a run launcher on the Live Run screen. Question + bounds + budget →
+ *  POST /runs → live status → summary with deep links into Evidence + Decisions for the run.
+ *  No terminal, no curl anywhere in the path. */
+export function LiveRun() {
+  useScreenTour(LIVE_RUN_TOUR_KEY, LIVE_RUN_TOUR_STEPS);
+  const [phase, setPhase] = useState<Phase>("form");
+  const [form, setForm] = useState<FormValues>(INITIAL_FORM);
+  const [result, setResult] = useState<RunResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [gated, setGated] = useState(false);
+
+  const questionId = useId();
+  const yearFromId = useId();
+  const yearToId = useId();
+  const maxId = useId();
+  const budgetId = useId();
+
+  const setField = useCallback(
+    (key: keyof FormValues, value: string) => setForm((f) => ({ ...f, [key]: value })),
+    [],
   );
-}
 
-function StepInspector({
-  inspector,
-  isPaused,
-}: {
-  inspector: LiveRunData["stepInspector"];
-  isPaused: boolean;
-}) {
-  const s = inspector;
-  return (
-    <section id="live-run-inspector" className="no-live-inspector" aria-labelledby="inspector-heading">
-      <div className="no-inspector-heading-row">
-        <h2 id="inspector-heading" className="no-inspector-heading">
-          Step {s.stepIndex}: {s.label}
-        </h2>
-        {isPaused && (
-          <span className="no-live-paused-badge" role="status">Paused</span>
-        )}
-        {!isPaused && (
-          <span className="no-live-running-badge" role="status">
-            <span className="no-live-pulse" aria-hidden="true" />
-            Running
-          </span>
-        )}
-      </div>
-      <dl className="no-inspector-grid">
-        <dt>Method</dt>
-        <dd>{s.method}</dd>
-        <dt>Locality</dt>
-        <dd className="no-locality-value">{s.locality}</dd>
-        <dt>Status</dt>
-        <dd>{s.status}</dd>
-        <dt>Input</dt>
-        <dd>{s.input}</dd>
-        <dt>Output so far</dt>
-        <dd>{s.outputSoFar}</dd>
-      </dl>
-    </section>
+  const canStart = form.question.trim().length > 0 && phase !== "running";
+
+  const handleStart = useCallback(
+    async (event: React.FormEvent) => {
+      event.preventDefault();
+      if (form.question.trim().length === 0) return;
+
+      const input: RunRequestInput = {
+        question: form.question.trim(),
+        year_from: toIntOrNull(form.yearFrom),
+        year_to: toIntOrNull(form.yearTo),
+        max_results: toIntOrNull(form.maxResults) ?? 50,
+        budget_usd: toFloatOrNull(form.budget),
+      };
+
+      setPhase("running");
+      setError(null);
+      setGated(false);
+      try {
+        const runResult = await startRun(input);
+        setResult(runResult);
+        setPhase("done");
+      } catch (err: unknown) {
+        if (err instanceof RunUnavailableError) {
+          setGated(true);
+          setError(err.message);
+        } else {
+          setError(err instanceof Error ? err.message : "The run could not be started.");
+        }
+        setPhase("error");
+      }
+    },
+    [form],
   );
-}
 
-function KPIRow({ kpis }: { kpis: LiveRunData["kpis"] }) {
+  const resetToForm = useCallback(() => {
+    setPhase("form");
+    setResult(null);
+    setError(null);
+    setGated(false);
+  }, []);
+
   return (
-    <div id="live-run-kpis" className="no-live-kpi-row" role="region" aria-label="Run metrics">
-      {kpis.map((kpi) => (
-        <div className="no-live-kpi" key={kpi.label}>
-          <div className="no-live-kpi-label">{kpi.label}</div>
-          <div
-            className={`no-live-kpi-value${kpi.tone ? ` is-${kpi.tone}` : ""}`}
-            aria-live="polite"
-          >
-            {kpi.value}
+    <div className="no-launch-page">
+      <header className="no-launch-header">
+        <span className="no-eyebrow">Live run</span>
+        <h1 className="no-launch-title">Start a new run</h1>
+        <p className="no-launch-lede">
+          Ask a research question and NOETARCH searches OpenAlex, freezes the evidence, and
+          screens each abstract with your connected model. Everything runs behind the
+          allowlisted egress guard; nothing the model returns is auto-executed.
+        </p>
+      </header>
+
+      {(phase === "form" || phase === "running") && (
+        <form className="no-launch-form" onSubmit={handleStart} aria-busy={phase === "running"}>
+          <div className="no-launch-field">
+            <label htmlFor={questionId} className="no-launch-label">
+              Research question
+            </label>
+            <textarea
+              id={questionId}
+              className="no-launch-textarea"
+              value={form.question}
+              onChange={(e) => setField("question", e.target.value)}
+              placeholder="e.g. Does spaced repetition improve long-term retention in adults?"
+              rows={3}
+              maxLength={500}
+              disabled={phase === "running"}
+              required
+            />
+          </div>
+
+          <div className="no-launch-grid">
+            <div className="no-launch-field">
+              <label htmlFor={yearFromId} className="no-launch-label">
+                Year from
+              </label>
+              <input
+                id={yearFromId}
+                className="no-launch-input"
+                type="number"
+                inputMode="numeric"
+                min={1800}
+                max={2100}
+                value={form.yearFrom}
+                onChange={(e) => setField("yearFrom", e.target.value)}
+                placeholder="2015"
+                disabled={phase === "running"}
+              />
+            </div>
+            <div className="no-launch-field">
+              <label htmlFor={yearToId} className="no-launch-label">
+                Year to
+              </label>
+              <input
+                id={yearToId}
+                className="no-launch-input"
+                type="number"
+                inputMode="numeric"
+                min={1800}
+                max={2100}
+                value={form.yearTo}
+                onChange={(e) => setField("yearTo", e.target.value)}
+                placeholder="2025"
+                disabled={phase === "running"}
+              />
+            </div>
+            <div className="no-launch-field">
+              <label htmlFor={maxId} className="no-launch-label">
+                Max papers
+              </label>
+              <input
+                id={maxId}
+                className="no-launch-input"
+                type="number"
+                inputMode="numeric"
+                min={1}
+                max={200}
+                value={form.maxResults}
+                onChange={(e) => setField("maxResults", e.target.value)}
+                disabled={phase === "running"}
+              />
+            </div>
+            <div className="no-launch-field">
+              <label htmlFor={budgetId} className="no-launch-label">
+                Budget (USD, optional)
+              </label>
+              <input
+                id={budgetId}
+                className="no-launch-input"
+                type="number"
+                inputMode="decimal"
+                min={0}
+                step={0.5}
+                value={form.budget}
+                onChange={(e) => setField("budget", e.target.value)}
+                placeholder="No cap"
+                disabled={phase === "running"}
+              />
+            </div>
+          </div>
+
+          <p className="no-launch-guard-note" role="note">
+            The run stops cleanly the moment it reaches your budget cap — you are never billed
+            past it.
+          </p>
+
+          <div className="no-launch-actions">
+            <button type="submit" className="no-primary-button" disabled={!canStart}>
+              {phase === "running" ? "Running…" : "Start run"}
+            </button>
+          </div>
+        </form>
+      )}
+
+      {phase === "running" && (
+        <div className="no-launch-running" role="status" aria-live="polite">
+          <span className="no-launch-spinner" aria-hidden="true" />
+          <div>
+            <p className="no-launch-running-title">Screening in progress</p>
+            <p className="no-launch-running-sub">
+              Searching, freezing evidence, and screening abstracts. Larger runs take longer —
+              this page updates as soon as the run finishes.
+            </p>
           </div>
         </div>
-      ))}
+      )}
+
+      {phase === "error" && (
+        <div className="no-launch-error" role="alert">
+          <p className="no-launch-error-title">
+            {gated ? "Real runs aren’t available yet" : "The run couldn’t start"}
+          </p>
+          <p>{error}</p>
+          <div className="no-launch-error-actions">
+            {gated && (
+              <>
+                <Link className="no-secondary-button" href="/models-policy">
+                  Open Models &amp; Policy
+                </Link>
+                <Link className="no-secondary-button" href="/first-run">
+                  Connect a key
+                </Link>
+              </>
+            )}
+            <button type="button" className="no-secondary-button" onClick={resetToForm}>
+              Back to the form
+            </button>
+          </div>
+        </div>
+      )}
+
+      {phase === "done" && result && <RunSummary result={result} onReset={resetToForm} />}
     </div>
   );
 }
 
-function EventLedger({ events }: { events: LiveRunData["events"] }) {
+function RunSummary({ result, onReset }: { result: RunResult; onReset: () => void }) {
+  const isBudget = result.status === "halted_budget";
+  const isFailed = result.status === "failed";
   return (
-    <section id="live-run-ledger" className="no-live-ledger" aria-labelledby="ledger-heading">
-      <h2 id="ledger-heading" className="no-ledger-heading">
-        System event ledger
-        <span className="no-ledger-note">Model notes are clearly labeled and separated from verified system facts.</span>
-      </h2>
-      <ol className="no-ledger-list" aria-label="Events, newest first">
-        {events.map((evt) => (
-          <li
-            key={evt.id}
-            className={`no-ledger-row is-${evt.kind}`}
-          >
-            <time className="no-ledger-time" dateTime={`2026-09-06T${evt.time}`}>
-              {evt.time}
-            </time>
-            <div className="no-ledger-body">
-              {evt.kind === "model" && (
-                <span className="no-model-note-label" aria-label="Model note">
-                  Model note
-                </span>
-              )}
-              <span className="no-ledger-message">{evt.message}</span>
-            </div>
-          </li>
-        ))}
-      </ol>
-    </section>
-  );
-}
-
-function DecisionInspector({ decisions }: { decisions: LiveRunData["decisions"] }) {
-  return (
-    <section id="live-run-decisions" className="no-live-decisions" aria-labelledby="decisions-heading">
-      <h2 id="decisions-heading" className="no-decisions-heading">
-        Pending decisions
-      </h2>
-      {decisions.map((dec) => (
-        <div key={dec.id} className="no-decision-card">
-          <span className="no-decision-badge">Pending</span>
-          <p className="no-decision-desc">{dec.description}</p>
-        </div>
-      ))}
-    </section>
-  );
-}
-
-function EvidenceCards({ cards }: { cards: LiveRunData["evidenceCards"] }) {
-  return (
-    <section id="live-run-evidence" className="no-live-evidence" aria-labelledby="evidence-heading">
-      <h2 id="evidence-heading" className="no-evidence-heading">
-        Evidence cards
-      </h2>
-      <div className="no-evidence-card-list">
-        {cards.map((card) => (
-          <article key={card.id} className="no-evidence-card">
-            <p className="no-evidence-title">{card.title}</p>
-            <dl className="no-evidence-meta">
-              <dt>DOI</dt>
-              <dd>
-                <span className="no-evidence-doi">{card.doi}</span>
-              </dd>
-              <dt>Source</dt>
-              <dd>{card.source}</dd>
-              <dt>Verified by</dt>
-              <dd className="no-evidence-verified">{card.verifiedBy}</dd>
-            </dl>
-          </article>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-type SimNoticeProps = { label: string };
-
-function SimNotice({ label }: SimNoticeProps) {
-  return (
-    <p className="no-live-sim-notice" role="status">
-      Simulated — no real backend action: {label}
-    </p>
-  );
-}
-
-export function LiveRun() {
-  useScreenTour(LIVE_RUN_TOUR_KEY, LIVE_RUN_TOUR_STEPS);
-  const [status, setStatus] = useState<LoadStatus>("loading");
-  const [data, setData] = useState<LiveRunData | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [isPaused, setIsPaused] = useState(false);
-  const [isStopped, setIsStopped] = useState(false);
-  const [retryActive, setRetryActive] = useState(false);
-  const [skipActive, setSkipActive] = useState(false);
-  const [layout, setLayout] = useState<LiveRunLayout>("split");
-  const [lastSim, setLastSim] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    fetchLiveRunData()
-      .then((d) => {
-        if (!cancelled) {
-          setData(d);
-          setStatus("ready");
-        }
-      })
-      .catch((err: unknown) => {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Failed to load the active run.");
-          setStatus("error");
-        }
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const showSim = useCallback((label: string) => {
-    setLastSim(label);
-    const t = setTimeout(() => setLastSim(null), 3500);
-    return () => clearTimeout(t);
-  }, []);
-
-  const handlePause = useCallback(() => {
-    setIsPaused((p) => !p);
-    showSim(isPaused ? "Resume" : "Pause");
-  }, [isPaused, showSim]);
-
-  const handleStop = useCallback(() => {
-    setIsStopped((s) => !s);
-    showSim("Stop");
-  }, [showSim]);
-
-  const handleRetry = useCallback(() => {
-    setRetryActive(true);
-    showSim("Retry current step");
-    setTimeout(() => setRetryActive(false), 2000);
-  }, [showSim]);
-
-  const handleSkip = useCallback(() => {
-    setSkipActive(true);
-    showSim("Skip step");
-    setTimeout(() => setSkipActive(false), 2000);
-  }, [showSim]);
-
-  const cycleLayout = useCallback(() => {
-    setLayout((l) => {
-      if (l === "split") return "wide-left";
-      if (l === "wide-left") return "wide-right";
-      return "split";
-    });
-  }, []);
-
-  const layoutLabel =
-    layout === "split"
-      ? "Layout: split"
-      : layout === "wide-left"
-      ? "Layout: wide left"
-      : "Layout: wide right";
-
-  if (status === "error") {
-    return (
-      <div className="no-live-page">
-        <div role="alert" className="no-live-error">
-          <p>{error}</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (status === "loading" || !data) {
-    return (
-      <div className="no-live-page" role="status" aria-label="Loading the active run">
-        <LiveRunSkeleton />
-      </div>
-    );
-  }
-
-  const { meta, steps, stepInspector, kpis, events, decisions, evidenceCards } = data;
-
-  // Real/empty mode: no active run. Intentional empty state, not a skeleton or error.
-  if (steps.length === 0 && meta.runId === "") {
-    return (
-      <div className="no-live-page">
-        <div className="no-live-empty" role="status">
-          <span className="no-eyebrow no-live-eyebrow">Live run</span>
-          <h1 className="no-live-title">No run is active</h1>
-          <p>
-            Nothing is running right now. Start a review and its steps, events, and evidence
-            will stream in here.
-          </p>
-          <Link className="no-primary-button" href="/guided-review">
-            Start a review
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className={`no-live-page is-layout-${layout}`}>
-      {/* Top bar */}
-      <div className="no-live-topbar">
-        <div className="no-live-topbar-left">
-          <span className="no-eyebrow no-live-eyebrow">
-            Run {meta.runId} · {meta.started} · {meta.elapsed} elapsed
-          </span>
-          <h1 className="no-live-title">{meta.title}</h1>
-        </div>
-        <div className="no-live-topbar-right">
-          <div className="no-live-controls" role="toolbar" aria-label="Run controls">
-            <button
-              type="button"
-              className="no-secondary-button"
-              onClick={handlePause}
-              aria-pressed={isPaused}
-              aria-label={isPaused ? "Resume run" : "Pause run"}
-            >
-              {isPaused ? "Resume" : "Pause"}
-            </button>
-            <button
-              type="button"
-              className="no-secondary-button"
-              onClick={handleStop}
-              aria-pressed={isStopped}
-              aria-label="Stop run"
-            >
-              Stop
-            </button>
-            <button
-              type="button"
-              className={`no-secondary-button${retryActive ? " is-active" : ""}`}
-              onClick={handleRetry}
-              aria-label="Retry current step"
-            >
-              Retry step
-            </button>
-            <button
-              type="button"
-              className={`no-secondary-button${skipActive ? " is-active" : ""}`}
-              onClick={handleSkip}
-              aria-label="Skip current step"
-            >
-              Skip step
-            </button>
-            <button
-              type="button"
-              className="no-secondary-button"
-              onClick={cycleLayout}
-              aria-label={layoutLabel}
-            >
-              Layout
-            </button>
-          </div>
-          <div className="no-live-locality-badge" aria-label="Execution locality">
-            <span className="no-locality-dot" aria-hidden="true" />
-            cloud · external
-          </div>
-        </div>
+    <section className="no-launch-summary" aria-labelledby="run-summary-heading">
+      <div className="no-launch-summary-head">
+        <h2 id="run-summary-heading" className="no-launch-summary-title">
+          Run complete
+        </h2>
+        <span
+          className={`no-launch-status is-${isFailed ? "bad" : isBudget ? "warn" : "ok"}`}
+          role="status"
+        >
+          {STATUS_LABEL[result.status]}
+        </span>
       </div>
 
-      {/* Simulated notice bar */}
-      {(isStopped || lastSim) && (
-        <div className="no-live-sim-bar" role="status" aria-live="polite">
-          {isStopped && (
-            <span className="no-live-stopped-notice">
-              Run stopped (simulated) — no real backend action taken.
-            </span>
-          )}
-          {lastSim && !isStopped && <SimNotice label={lastSim} />}
-        </div>
+      <p className="no-launch-summary-question">{result.question}</p>
+
+      {isBudget && (
+        <p className="no-launch-summary-note" role="note">
+          The run halted cleanly at your budget cap. Frozen evidence and the decisions made so
+          far are saved below.
+        </p>
+      )}
+      {isFailed && result.error && (
+        <p className="no-launch-summary-note is-bad" role="note">
+          {result.error}
+        </p>
       )}
 
-      {/* Prototype notice */}
-      <div className="no-live-proto-notice" role="note">
-        Prototype · Mock data · Simulated · no backend
+      <div id="live-run-kpis" className="no-launch-metrics" role="region" aria-label="Run metrics">
+        <Metric label="Frozen" value={result.frozen} />
+        <Metric label="Deduplicated" value={result.deduplicated} />
+        <Metric label="Screened" value={result.screened} />
+        <Metric label="Include" value={result.included} tone="ok" />
+        <Metric label="Exclude" value={result.excluded} />
+        <Metric label="Uncertain" value={result.uncertain} tone="warn" />
+        <Metric label="Input tokens" value={result.inputTokens.toLocaleString()} />
+        <Metric label="Output tokens" value={result.outputTokens.toLocaleString()} />
+        <Metric label="Cost" value={`$${result.costUsd.toFixed(4)}`} />
       </div>
 
-      {/* Body */}
-      <div className="no-live-body">
-        {/* Left column */}
-        <div className="no-live-left">
-          <KPIRow kpis={kpis} />
-          <StepRail steps={steps} activeIndex={stepInspector.stepIndex} isPaused={isPaused} />
-          <StepInspector inspector={stepInspector} isPaused={isPaused} />
-          <DecisionInspector decisions={decisions} />
-          <EvidenceCards cards={evidenceCards} />
-        </div>
-
-        {/* Right column */}
-        <div className="no-live-right">
-          <EventLedger events={events} />
-        </div>
+      <div className="no-launch-deeplinks">
+        <Link
+          className="no-primary-button"
+          href={`/evidence?run=${encodeURIComponent(result.id)}`}
+        >
+          View evidence ({result.frozen})
+        </Link>
+        <Link
+          className="no-secondary-button"
+          href={`/decisions?run=${encodeURIComponent(result.id)}`}
+        >
+          View decisions ({result.screened})
+        </Link>
+        <button type="button" className="no-secondary-button" onClick={onReset}>
+          Start another run
+        </button>
       </div>
+
+      <p className="no-launch-provenance">
+        Model: <code>{result.model}</code> · run <code>{result.id}</code>. Every screening
+        result is stored as a pending claim — review and act on them under Decisions.
+      </p>
+    </section>
+  );
+}
+
+function Metric({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: number | string;
+  tone?: "ok" | "warn";
+}) {
+  return (
+    <div className="no-launch-metric">
+      <div className="no-launch-metric-label">{label}</div>
+      <div className={`no-launch-metric-value${tone ? ` is-${tone}` : ""}`}>{value}</div>
     </div>
   );
 }

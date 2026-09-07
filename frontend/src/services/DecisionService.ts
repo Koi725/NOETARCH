@@ -21,12 +21,15 @@ export const mockDecisionService: DecisionService = {
  * Fetches decisions from the real backend when NEXT_PUBLIC_API_BASE is set.
  * Falls back to mock data when the env var is absent, so the app runs standalone.
  */
-export async function fetchDecisions(): Promise<Decision[]> {
+export async function fetchDecisions(runId?: string): Promise<Decision[]> {
   const apiBase = process.env.NEXT_PUBLIC_API_BASE;
   if (!apiBase) {
     return mockDecisionService.getDecisions();
   }
-  const res = await fetch(`${apiBase}/api/v1/decisions`, {
+  const url = runId
+    ? `${apiBase}/api/v1/decisions?run=${encodeURIComponent(runId)}`
+    : `${apiBase}/api/v1/decisions`;
+  const res = await fetch(url, {
     headers: { Accept: "application/json" },
   });
   if (!res.ok) {

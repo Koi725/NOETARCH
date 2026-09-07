@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useId, useCallback } from "react";
+import Link from "next/link";
 import { Search, X } from "lucide-react";
 import {
   fetchEvidenceData,
@@ -167,7 +168,7 @@ function DetailInspector({
   );
 }
 
-export function EvidenceLibrary() {
+export function EvidenceLibrary({ runId }: { runId?: string }) {
   const [records, setRecords] = useState<EvidenceRecord[]>([]);
   const [project, setProject] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
@@ -215,7 +216,7 @@ export function EvidenceLibrary() {
 
   useEffect(() => {
     let cancelled = false;
-    fetchEvidenceData()
+    fetchEvidenceData(runId)
       .then((data) => {
         if (!cancelled) {
           setRecords(data.records);
@@ -234,7 +235,7 @@ export function EvidenceLibrary() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [runId]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -290,13 +291,23 @@ export function EvidenceLibrary() {
       <div className="no-ev-header">
         <div className="no-ev-header-top">
           <div>
-            <div className="no-eyebrow no-ev-eyebrow">Evidence library · {project}</div>
+            <div className="no-eyebrow no-ev-eyebrow">
+              Evidence library{project ? ` · ${project}` : ""}
+            </div>
             <h1 className="no-ev-page-title">Evidence records</h1>
           </div>
-          <div className="no-prototype-notice no-ev-proto" role="note">
-            Prototype · Mock data
-          </div>
         </div>
+
+        {runId && (
+          <div className="no-run-filter-banner" role="status">
+            <span>
+              Showing evidence from run <code>{runId}</code>.
+            </span>
+            <Link className="no-run-filter-clear" href="/evidence">
+              Clear filter
+            </Link>
+          </div>
+        )}
 
         <div id="evidence-search" className="no-ev-search-row">
           <label htmlFor={searchId} className="sr-only">
@@ -413,7 +424,9 @@ export function EvidenceLibrary() {
           {filtered.length === 0 ? (
             <p className="no-ev-empty">
               {records.length === 0
-                ? "No evidence yet — add or fetch sources to build your library."
+                ? runId
+                  ? "This run froze no evidence records."
+                  : "No evidence yet — start a run to build your library."
                 : "No records match the current filter."}
             </p>
           ) : (

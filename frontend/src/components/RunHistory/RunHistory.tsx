@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useEffect, useId } from "react";
+import Link from "next/link";
 import { Play, Check, Square, X, CircleDot } from "lucide-react";
 import { fetchRuns } from "@/services/HistoryService";
+import { isRealBackend } from "@/services/DecisionService";
 import type {
   Run,
   RunHistoryProps,
@@ -38,6 +40,13 @@ const FILTER_LABELS: Record<FilterTab, string> = {
 };
 
 const FILTER_TABS: FilterTab[] = ["all", "complete", "running", "interrupted", "failed"];
+
+// Real runs carry URL-safe ids and can deep-link into their Evidence + Decisions. Seed/demo
+// rows use display ids (with a middot) that are not routable, so those keep the export note.
+const RUN_ID_PATTERN = /^[a-z0-9][a-z0-9_-]{0,127}$/;
+function isRoutableRunId(id: string): boolean {
+  return RUN_ID_PATTERN.test(id);
+}
 
 function matchesFilter(run: Run, filter: FilterTab): boolean {
   if (filter === "all") return true;
@@ -215,15 +224,34 @@ function RunRow({
               )}
             </>
           )}
-          <button
-            type="button"
-            className="no-run-action-btn"
-            disabled
-            aria-disabled="true"
-            aria-label="Export evidence (export only — no backend)"
-          >
-            Evidence <span className="no-run-export-note">(export only)</span>
-          </button>
+          {isRoutableRunId(run.id) ? (
+            <>
+              <Link
+                className="no-run-action-btn"
+                href={`/evidence?run=${encodeURIComponent(run.id)}`}
+                aria-label={`View evidence for run ${run.id}`}
+              >
+                Evidence
+              </Link>
+              <Link
+                className="no-run-action-btn"
+                href={`/decisions?run=${encodeURIComponent(run.id)}`}
+                aria-label={`View decisions for run ${run.id}`}
+              >
+                Decisions
+              </Link>
+            </>
+          ) : (
+            <button
+              type="button"
+              className="no-run-action-btn"
+              disabled
+              aria-disabled="true"
+              aria-label="Export evidence (export only — no backend)"
+            >
+              Evidence <span className="no-run-export-note">(export only)</span>
+            </button>
+          )}
         </div>
       </div>
     </li>
@@ -304,7 +332,9 @@ function RunHistoryView({ runs }: { runs: Run[] }) {
       <header className="no-page-header">
         <h1 className="no-page-title">History & replay · recent runs</h1>
         <p className="no-prototype-notice" role="note">
-          Simulated · no backend
+          {isRealBackend()
+            ? "Your runs · newest first"
+            : "Preview · sample runs"}
         </p>
       </header>
 

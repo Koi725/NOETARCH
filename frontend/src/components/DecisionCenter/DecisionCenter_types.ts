@@ -33,4 +33,6 @@ export interface DecisionCardProps {
 
 export interface DecisionCenterProps {
   decisions?: Decision[];
+  /** When set, scope the list to one run's claims (deep-link from a run summary). */
+  runId?: string;
 }

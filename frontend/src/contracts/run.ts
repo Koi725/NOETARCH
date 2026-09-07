@@ -56,6 +56,45 @@ export interface StepInspector {
   outputSoFar: string;
 }
 
+// ── Linear run executor (POST /runs, GET /runs/{id}) ─────────────────────────
+// Terminal states from the backend. `halted_budget` means the run stopped cleanly at the
+// cost cap; `no_provider` / `external_sources_disabled` are the deny-by-default gates.
+export type RunExecutionStatus =
+  | "completed"
+  | "halted_budget"
+  | "failed"
+  | "no_provider"
+  | "external_sources_disabled";
+
+export interface RunRequestInput {
+  question: string;
+  year_from?: number | null;
+  year_to?: number | null;
+  max_results?: number;
+  budget_usd?: number | null;
+}
+
+export interface RunResult {
+  id: string;
+  status: RunExecutionStatus;
+  question: string;
+  provider: string;
+  model: string;
+  frozen: number;
+  deduplicated: number;
+  screened: number;
+  included: number;
+  excluded: number;
+  uncertain: number;
+  offSchema: number;
+  inputTokens: number;
+  outputTokens: number;
+  costUsd: number;
+  createdAt: string;
+  finishedAt?: string | null;
+  error?: string | null;
+}
+
 export interface HistoryRun {
   id: string;
   status: RunStatus;

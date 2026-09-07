@@ -24,7 +24,7 @@ export interface EvidenceData {
  * Falls back to mock data (synchronously resolved Promise) when the env var is absent,
  * so the app runs standalone without a backend.
  */
-export async function fetchEvidenceData(): Promise<EvidenceData> {
+export async function fetchEvidenceData(runId?: string): Promise<EvidenceData> {
   const apiBase = process.env.NEXT_PUBLIC_API_BASE;
   if (!apiBase) {
     return {
@@ -32,7 +32,10 @@ export async function fetchEvidenceData(): Promise<EvidenceData> {
       project: mockEvidenceService.getProjectName(),
     };
   }
-  const res = await fetch(`${apiBase}/api/v1/evidence`, {
+  const url = runId
+    ? `${apiBase}/api/v1/evidence?run=${encodeURIComponent(runId)}`
+    : `${apiBase}/api/v1/evidence`;
+  const res = await fetch(url, {
     headers: { Accept: "application/json" },
   });
   if (!res.ok) {
