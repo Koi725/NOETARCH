@@ -9,7 +9,7 @@ Security controls:
   - Unknown decision → 404. Structured errors via the app-level handler; no internals leak.
   - Writes are LOCAL-ONLY and PRE-AUTH — see THREAT.md. CORS remains deny-by-default.
 """
-from fastapi import APIRouter, Depends, HTTPException, Path, Request
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, Request
 from sqlalchemy.orm import Session
 
 from noetarch.core.database import get_session
@@ -32,6 +32,7 @@ from noetarch.modules.decisions.write_service import (
 router = APIRouter(tags=["decisions"])
 
 _ID_PATTERN = r"^[a-z0-9][a-z0-9_-]{0,62}$"
+_RUN_ID_PATTERN = r"^[a-z0-9][a-z0-9_-]{0,127}$"
 
 
 def _to_audit_entry(row: AuditLogORM) -> AuditEntry:
@@ -50,9 +51,18 @@ def _to_audit_entry(row: AuditLogORM) -> AuditEntry:
 
 
 @router.get("", response_model=list[Decision])
-def list_decisions(session: Session = Depends(get_session)) -> list[Decision]:
-    """List all decisions awaiting or past review."""
-    return DecisionService(DecisionRepository(session)).list_decisions()
+def list_decisions(
+    run: str | None = Query(
+        default=None,
+        min_length=1,
+        max_length=128,
+        pattern=_RUN_ID_PATTERN,
+        description="Optional run id — return only the decisions produced by that run.",
+    ),
+    session: Session = Depends(get_session),
+) -> list[Decision]:
+    """List decisions awaiting or past review; ``?run=`` scopes to one run's claims."""
+    return DecisionService(DecisionRepository(session)).list_decisions(run_id=run)
 
 
 @router.get("/{decision_id}", response_model=Decision)

@@ -7,7 +7,9 @@ class DecisionService:
     def __init__(self, repo: DecisionRepository) -> None:
         self._repo = repo
 
-    def list_decisions(self) -> list[Decision]:
+    def list_decisions(self, run_id: str | None = None) -> list[Decision]:
+        if run_id:
+            return self._repo.list_for_run(run_id)
         return self._repo.list_all()
 
     def get_decision(self, decision_id: str) -> Decision | None:

@@ -9,12 +9,13 @@ Security controls:
   - No write endpoints on this surface.
   - CORS allowlist enforced at the app level (NOETARCH_CORS_ALLOW_ORIGINS).
 """
-from fastapi import APIRouter, Depends, HTTPException, Path, Request
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, Request
 from sqlalchemy.orm import Session
 
 from noetarch.core.database import get_session
 from noetarch.core.egress import EgressError
 from noetarch.modules.audit.repository import AuditRepository
+from noetarch.modules.decisions.repository import DecisionRepository
 from noetarch.modules.evidence.dependencies import (
     EvidenceProvider,
     external_sources_enabled,
@@ -33,12 +34,26 @@ from noetarch.modules.evidence.service import EvidenceService
 router = APIRouter(tags=["evidence"])
 
 _ID_PATTERN = r"^[a-z][a-z0-9_-]{0,62}$"
+_RUN_ID_PATTERN = r"^[a-z0-9][a-z0-9_-]{0,127}$"
 
 
 @router.get("", response_model=EvidenceListResponse)
-def list_evidence(session: Session = Depends(get_session)) -> EvidenceListResponse:
-    """List all evidence records for the active project."""
-    return EvidenceService(EvidenceRepository(session)).list_records()
+def list_evidence(
+    run: str | None = Query(
+        default=None,
+        min_length=1,
+        max_length=128,
+        pattern=_RUN_ID_PATTERN,
+        description="Optional run id — return only the evidence a given run froze/screened.",
+    ),
+    session: Session = Depends(get_session),
+) -> EvidenceListResponse:
+    """List evidence records; ``?run=`` scopes to the records a single run screened."""
+    service = EvidenceService(EvidenceRepository(session))
+    if run:
+        record_ids = DecisionRepository(session).paper_ids_for_run(run)
+        return service.list_records(record_ids=record_ids)
+    return service.list_records()
 
 
 @router.post("/search", response_model=EvidenceSearchResponse)

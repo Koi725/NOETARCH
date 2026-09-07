@@ -23,6 +23,21 @@ class EvidenceRepository:
         )
         return [self._to_schema(r) for r in rows]
 
+    def list_by_ids(self, record_ids: list[str]) -> list[EvidenceRecord]:
+        """Records for the given ids, in the table's stable sort order (run deep-link)."""
+        if not record_ids:
+            return []
+        rows = (
+            self._session.execute(
+                select(EvidenceRecordORM)
+                .where(EvidenceRecordORM.id.in_(record_ids))
+                .order_by(EvidenceRecordORM.sort_order)
+            )
+            .scalars()
+            .all()
+        )
+        return [self._to_schema(r) for r in rows]
+
     def get_by_id(self, record_id: str) -> EvidenceRecord | None:
         row = self._session.get(EvidenceRecordORM, record_id)
         return self._to_schema(row) if row is not None else None

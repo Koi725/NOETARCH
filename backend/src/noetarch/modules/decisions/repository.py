@@ -37,6 +37,44 @@ class DecisionRepository:
         )
         return [self.to_schema(r) for r in rows]
 
+    @staticmethod
+    def _run_prefix(run_id: str) -> str:
+        """Deterministic id prefix the run executor writes: ``run-{run_id}-{paper_id}``."""
+        return f"run-{run_id}-"
+
+    @staticmethod
+    def _escape_like(value: str) -> str:
+        # Neutralize SQL LIKE wildcards so the prefix match is literal (defence in depth;
+        # run_id is already regex-validated at the route). Pairs with escape="\\".
+        return value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+
+    def list_for_run(self, run_id: str) -> list[Decision]:
+        """Decisions produced by a single run, in stable order (run-scoped deep-link)."""
+        like = self._escape_like(self._run_prefix(run_id)) + "%"
+        rows = (
+            self._session.execute(
+                select(DecisionORM)
+                .where(DecisionORM.id.like(like, escape="\\"))
+                .order_by(DecisionORM.sort_order)
+            )
+            .scalars()
+            .all()
+        )
+        return [self.to_schema(r) for r in rows]
+
+    def paper_ids_for_run(self, run_id: str) -> list[str]:
+        """Evidence record ids a run screened, recovered from its decision ids."""
+        prefix = self._run_prefix(run_id)
+        like = self._escape_like(prefix) + "%"
+        ids = (
+            self._session.execute(
+                select(DecisionORM.id).where(DecisionORM.id.like(like, escape="\\"))
+            )
+            .scalars()
+            .all()
+        )
+        return [rid[len(prefix):] for rid in ids if rid.startswith(prefix)]
+
     def get_by_id(self, decision_id: str) -> Decision | None:
         row = self._session.get(DecisionORM, decision_id)
         return self.to_schema(row) if row is not None else None
