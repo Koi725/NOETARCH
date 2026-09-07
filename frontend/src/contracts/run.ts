@@ -74,6 +74,33 @@ export interface RunRequestInput {
   budget_usd?: number | null;
 }
 
+// PICO-style screening criteria derived for the run (WS2).
+export interface RunCriteria {
+  population: string;
+  intervention: string;
+  comparator: string;
+  outcome: string;
+  include: string[];
+  exclude: string[];
+  offSchema: boolean;
+}
+
+// One grounded key finding: its DOI is guaranteed to be in the frozen included set (WS3).
+export interface RunSynthesisFinding {
+  doi: string;
+  title: string;
+  finding: string;
+}
+
+export interface RunSynthesis {
+  summary: string;
+  findings: RunSynthesisFinding[];
+  grounded: boolean;
+  droppedFindings: number;
+  redactedCitations: number;
+  offSchema: boolean;
+}
+
 export interface RunResult {
   id: string;
   status: RunExecutionStatus;
@@ -92,7 +119,11 @@ export interface RunResult {
   costUsd: number;
   createdAt: string;
   finishedAt?: string | null;
+  elapsedMs?: number | null;
   error?: string | null;
+  plannedQueries: string[];
+  criteria?: RunCriteria | null;
+  synthesis?: RunSynthesis | null;
 }
 
 export interface HistoryRun {

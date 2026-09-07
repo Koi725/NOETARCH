@@ -3,7 +3,13 @@
 import { useCallback, useId, useState } from "react";
 import Link from "next/link";
 import { RunUnavailableError, startRun } from "@/services/RunService";
-import type { RunExecutionStatus, RunRequestInput, RunResult } from "@/contracts/run";
+import type {
+  RunCriteria,
+  RunExecutionStatus,
+  RunRequestInput,
+  RunResult,
+  RunSynthesis,
+} from "@/contracts/run";
 import { useScreenTour, LIVE_RUN_TOUR_KEY, LIVE_RUN_TOUR_STEPS } from "@/components/ui";
 import "@/tailwind/components/LiveRun/LiveRun.css";
 import "@/tailwind/components/LiveRunLauncher/LiveRunLauncher.css";
@@ -268,9 +274,17 @@ export function LiveRun() {
   );
 }
 
+function formatElapsed(ms?: number | null): string | null {
+  if (ms == null) return null;
+  if (ms < 1000) return `${ms} ms`;
+  return `${(ms / 1000).toFixed(1)} s`;
+}
+
 function RunSummary({ result, onReset }: { result: RunResult; onReset: () => void }) {
   const isBudget = result.status === "halted_budget";
   const isFailed = result.status === "failed";
+  const elapsed = formatElapsed(result.elapsedMs);
+  const findingCount = result.synthesis?.findings.length ?? 0;
   return (
     <section className="no-launch-summary" aria-labelledby="run-summary-heading">
       <div className="no-launch-summary-head">
@@ -286,6 +300,20 @@ function RunSummary({ result, onReset }: { result: RunResult; onReset: () => voi
       </div>
 
       <p className="no-launch-summary-question">{result.question}</p>
+
+      {/* One-line pipeline narrative: found → screened → included → synthesis, with cost + time. */}
+      <p className="no-launch-narrative">
+        Found <strong>{result.frozen}</strong> paper{result.frozen === 1 ? "" : "s"}
+        {result.deduplicated > 0 && ` (${result.deduplicated} duplicate merged)`} → screened{" "}
+        <strong>{result.screened}</strong> → included <strong>{result.included}</strong>
+        {result.synthesis && (
+          <>
+            {" "}
+            → synthesised <strong>{findingCount}</strong> finding{findingCount === 1 ? "" : "s"}
+          </>
+        )}
+        . {elapsed && <>{elapsed} · </>}${result.costUsd.toFixed(4)}
+      </p>
 
       {isBudget && (
         <p className="no-launch-summary-note" role="note">
@@ -309,7 +337,20 @@ function RunSummary({ result, onReset }: { result: RunResult; onReset: () => voi
         <Metric label="Input tokens" value={result.inputTokens.toLocaleString()} />
         <Metric label="Output tokens" value={result.outputTokens.toLocaleString()} />
         <Metric label="Cost" value={`$${result.costUsd.toFixed(4)}`} />
+        {elapsed && <Metric label="Time" value={elapsed} />}
       </div>
+
+      {result.plannedQueries && result.plannedQueries.length > 0 && (
+        <p className="no-launch-queries">
+          <span className="no-launch-queries-label">Searched OpenAlex + Crossref for:</span>{" "}
+          {result.plannedQueries.map((q) => (
+            <code key={q}>{q}</code>
+          ))}
+        </p>
+      )}
+
+      {result.criteria && <CriteriaBlock criteria={result.criteria} />}
+      {result.synthesis && <SynthesisBlock synthesis={result.synthesis} />}
 
       <div className="no-launch-deeplinks">
         <Link
@@ -351,5 +392,100 @@ function Metric({
       <div className="no-launch-metric-label">{label}</div>
       <div className={`no-launch-metric-value${tone ? ` is-${tone}` : ""}`}>{value}</div>
     </div>
+  );
+}
+
+/** The explicit, PICO-style screening criteria derived for this run (WS2). */
+function CriteriaBlock({ criteria }: { criteria: RunCriteria }) {
+  const pico: [string, string][] = [
+    ["Population", criteria.population],
+    ["Intervention", criteria.intervention],
+    ["Comparator", criteria.comparator],
+    ["Outcome", criteria.outcome],
+  ];
+  const hasPico = pico.some(([, v]) => v);
+  if (!hasPico && criteria.include.length === 0 && criteria.exclude.length === 0) {
+    return null;
+  }
+  return (
+    <section className="no-launch-block" aria-label="Screening criteria">
+      <h3 className="no-launch-block-title">Screening criteria</h3>
+      {hasPico && (
+        <dl className="no-launch-pico">
+          {pico
+            .filter(([, v]) => v)
+            .map(([k, v]) => (
+              <div key={k} className="no-launch-pico-row">
+                <dt>{k}</dt>
+                <dd>{v}</dd>
+              </div>
+            ))}
+        </dl>
+      )}
+      {criteria.include.length > 0 && (
+        <p className="no-launch-criteria-line">
+          <span className="no-launch-tag is-ok">Include</span> {criteria.include.join("; ")}
+        </p>
+      )}
+      {criteria.exclude.length > 0 && (
+        <p className="no-launch-criteria-line">
+          <span className="no-launch-tag is-warn">Exclude</span> {criteria.exclude.join("; ")}
+        </p>
+      )}
+    </section>
+  );
+}
+
+/** The grounded synthesis: every cited DOI is guaranteed to be in the frozen included set. */
+function SynthesisBlock({ synthesis }: { synthesis: RunSynthesis }) {
+  if (synthesis.offSchema && !synthesis.summary && synthesis.findings.length === 0) {
+    return (
+      <section className="no-launch-block" aria-label="Evidence synthesis">
+        <h3 className="no-launch-block-title">Evidence synthesis</h3>
+        <p className="no-launch-summary-note" role="note">
+          A synthesis could not be generated for this run.
+        </p>
+      </section>
+    );
+  }
+  return (
+    <section className="no-launch-block" aria-label="Evidence synthesis">
+      <div className="no-launch-block-head">
+        <h3 className="no-launch-block-title">Evidence synthesis</h3>
+        <span
+          className={`no-launch-ground ${synthesis.grounded ? "is-ok" : "is-warn"}`}
+          role="status"
+        >
+          {synthesis.grounded ? "Grounded" : "Grounding flags"}
+        </span>
+      </div>
+      {synthesis.summary && <p className="no-launch-synth-summary">{synthesis.summary}</p>}
+      {synthesis.findings.length > 0 && (
+        <ul className="no-launch-findings">
+          {synthesis.findings.map((f) => (
+            <li key={f.doi} className="no-launch-finding">
+              <span className="no-launch-finding-text">{f.finding}</span>
+              <a
+                className="no-launch-finding-doi"
+                href={`https://doi.org/${f.doi}`}
+                target="_blank"
+                rel="noreferrer noopener"
+              >
+                {f.title}
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
+      {!synthesis.grounded && (
+        <p className="no-launch-summary-note is-warn" role="note">
+          {synthesis.droppedFindings > 0 &&
+            `${synthesis.droppedFindings} finding(s) citing an unknown DOI were dropped. `}
+          {synthesis.redactedCitations > 0 &&
+            `${synthesis.redactedCitations} unverified citation(s) in the summary were redacted. `}
+          Only DOIs from the frozen included set are ever shown.
+        </p>
+      )}
+    </section>
   );
 }
