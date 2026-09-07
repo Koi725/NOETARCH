@@ -24,6 +24,35 @@ class RunRequest(BaseModel):
     budget_usd: float | None = Field(default=None, ge=0)
 
 
+class RunCriteria(BaseModel):
+    """PICO-style screening criteria derived for the run (shown in the UI)."""
+
+    population: str = ""
+    intervention: str = ""
+    comparator: str = ""
+    outcome: str = ""
+    include: list[str] = Field(default_factory=list)
+    exclude: list[str] = Field(default_factory=list)
+    offSchema: bool = False  # noqa: N815
+
+
+class RunSynthesisFinding(BaseModel):
+    doi: str
+    title: str
+    finding: str
+
+
+class RunSynthesis(BaseModel):
+    """Grounded synthesis of the included set. Every cited DOI is in the frozen set."""
+
+    summary: str = ""
+    findings: list[RunSynthesisFinding] = Field(default_factory=list)
+    grounded: bool = True
+    droppedFindings: int = 0  # noqa: N815
+    redactedCitations: int = 0  # noqa: N815
+    offSchema: bool = False  # noqa: N815
+
+
 class RunResult(BaseModel):
     id: str
     status: RunStatus
@@ -42,4 +71,8 @@ class RunResult(BaseModel):
     costUsd: float = 0.0  # noqa: N815
     createdAt: str  # noqa: N815
     finishedAt: str | None = None  # noqa: N815
+    elapsedMs: int | None = None  # noqa: N815
     error: str | None = None
+    plannedQueries: list[str] = Field(default_factory=list)  # noqa: N815
+    criteria: RunCriteria | None = None
+    synthesis: RunSynthesis | None = None

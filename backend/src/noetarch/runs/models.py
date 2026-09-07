@@ -4,7 +4,7 @@ A run row captures the inputs/params (question, year range, caps, budget, provid
 so a run is replayable, plus the outcome counters and token/cost accounting. No seed
 builder — this table is empty in demo mode and populated only by real runs.
 """
-from sqlalchemy import Float, Integer, String
+from sqlalchemy import Float, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from noetarch.core.database import Base
@@ -37,3 +37,8 @@ class RunORM(Base):
     created_at: Mapped[str] = mapped_column(String)
     finished_at: Mapped[str | None] = mapped_column(String, nullable=True)
     error: Mapped[str | None] = mapped_column(String, nullable=True)
+    # WS2/WS3 artefacts — JSON-encoded text; nullable so pre-existing rows/replays are fine.
+    criteria: Mapped[str | None] = mapped_column(Text, nullable=True)
+    synthesis: Mapped[str | None] = mapped_column(Text, nullable=True)
+    planned_queries: Mapped[str | None] = mapped_column(Text, nullable=True)
+    elapsed_ms: Mapped[int | None] = mapped_column(Integer, nullable=True)

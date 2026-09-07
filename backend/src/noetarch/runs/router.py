@@ -11,6 +11,7 @@ from fastapi import APIRouter, Depends, HTTPException, Path
 from sqlalchemy.orm import Session
 
 from noetarch.core.database import get_session
+from noetarch.runs.executor import result_from_row
 from noetarch.runs.models import RunORM
 from noetarch.runs.runner import RunUnavailableError, build_executor
 from noetarch.runs.schemas import RunRequest, RunResult
@@ -37,23 +38,4 @@ def get_run(
     row = session.get(RunORM, run_id)
     if row is None:
         raise HTTPException(status_code=404, detail=f"Run '{run_id}' not found.")
-    return RunResult(
-        id=row.id,
-        status=row.status,  # type: ignore[arg-type]
-        question=row.question,
-        provider=row.provider,
-        model=row.model,
-        frozen=row.frozen,
-        deduplicated=row.deduplicated,
-        screened=row.screened,
-        included=row.included,
-        excluded=row.excluded,
-        uncertain=row.uncertain,
-        offSchema=row.off_schema,
-        inputTokens=row.input_tokens,
-        outputTokens=row.output_tokens,
-        costUsd=row.cost_usd,
-        createdAt=row.created_at,
-        finishedAt=row.finished_at,
-        error=row.error,
-    )
+    return result_from_row(row)
