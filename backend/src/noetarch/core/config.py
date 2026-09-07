@@ -20,6 +20,12 @@ class Settings(BaseSettings):
         default="sqlite:///./noetarch.db",
         validation_alias=AliasChoices("NOETARCH_DATABASE_URL", "DATABASE_URL"),
     )
+    # Load the demo seed rows on the seed/startup path. Default ON for now so demo
+    # deployments stay populated. Set NOETARCH_SEED_DEMO=false for "real mode": the
+    # schema is still created/migrated, but no seed rows are inserted (clean, empty DB).
+    # The seed code itself is never removed — real data will come from the future
+    # workflow engine; this flag only gates whether the demo rows are loaded.
+    seed_demo: bool = True
     # External data sources (M9). Default OFF: the app runs fully offline on DB/seed
     # data and never makes an outbound network call unless this is explicitly enabled.
     external_sources_enabled: bool = False
