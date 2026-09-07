@@ -3,7 +3,7 @@
 Exposes read mappings plus ORM access used by the write path. All queries use
 SQLAlchemy constructs (parameterized); no raw SQL.
 """
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from noetarch.modules.decisions.infrastructure.models import DecisionORM
@@ -13,6 +13,21 @@ from noetarch.modules.decisions.schemas import Decision
 class DecisionRepository:
     def __init__(self, session: Session) -> None:
         self._session = session
+
+    # ── creation helpers (used by the run executor; caller owns the commit) ──────
+
+    def id_exists(self, decision_id: str) -> bool:
+        return self._session.get(DecisionORM, decision_id) is not None
+
+    def next_sort_order(self) -> int:
+        current_max = self._session.execute(
+            select(func.max(DecisionORM.sort_order))
+        ).scalar_one_or_none()
+        return (current_max or 0) + 1
+
+    def add(self, row: DecisionORM) -> None:
+        """Insert a decision row (parameterized via the ORM). Caller commits."""
+        self._session.add(row)
 
     def list_all(self) -> list[Decision]:
         rows = (
