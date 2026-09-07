@@ -88,6 +88,48 @@ def fresh_db_session(fresh_db_engine: Engine) -> Iterator[Session]:
         yield session
 
 
+# ─── Empty (unseeded) database for "real mode" tests ─────────────────────────
+# Schema is created but NO seed rows are inserted, mirroring NOETARCH_SEED_DEMO=false.
+# Read endpoints must return HTTP 200 with a valid empty-shaped payload against this DB.
+
+
+@pytest.fixture
+def empty_db_engine() -> Iterator[Engine]:
+    registry.import_all_models()
+    fd, path = tempfile.mkstemp(suffix=".db")
+    os.close(fd)
+    engine = create_engine(f"sqlite:///{path}", connect_args={"check_same_thread": False})
+    Base.metadata.create_all(engine)  # schema only — deliberately not seeded
+    try:
+        yield engine
+    finally:
+        engine.dispose()
+        os.unlink(path)
+
+
+@pytest.fixture
+def empty_client(empty_db_engine: Engine, db_engine: Engine) -> Iterator[TestClient]:
+    """A TestClient whose get_session points at a schema-only, unseeded DB.
+
+    On teardown the dependency is restored to the shared read DB so later tests are
+    unaffected (same restore protocol as ``write_client``).
+    """
+
+    def _empty_session() -> Iterator[Session]:
+        with Session(empty_db_engine) as session:
+            yield session
+
+    def _shared_session() -> Iterator[Session]:
+        with Session(db_engine) as session:
+            yield session
+
+    app.dependency_overrides[get_session] = _empty_session
+    try:
+        yield TestClient(app)
+    finally:
+        app.dependency_overrides[get_session] = _shared_session
+
+
 @pytest.fixture
 def write_client(fresh_db_engine: Engine, db_engine: Engine) -> Iterator[TestClient]:
     """A TestClient whose get_session points at an isolated, freshly-seeded DB.
