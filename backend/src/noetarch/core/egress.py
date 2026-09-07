@@ -32,7 +32,9 @@ from typing import Any
 import httpx
 
 # Hardcoded provider allowlist — NOT user-configurable, NOT read from input.
-ALLOWED_HOSTS: frozenset[str] = frozenset({"api.openalex.org", "api.crossref.org"})
+ALLOWED_HOSTS: frozenset[str] = frozenset(
+    {"api.openalex.org", "api.crossref.org", "api.anthropic.com"}
+)
 
 MAX_RESPONSE_BYTES = 5 * 1024 * 1024  # 5 MiB
 CONNECT_TIMEOUT = 5.0
@@ -115,6 +117,52 @@ class EgressClient:
                 url = httpx.URL(scheme="https", host=host, path=path)
                 return self._request_with_policy(client, url=url, params=params, origin_host=host)
         except httpx.HTTPError as exc:  # timeouts, connect errors, protocol errors
+            raise EgressError(f"External request failed: {type(exc).__name__}") from exc
+
+    def post_json(
+        self,
+        *,
+        host: str,
+        path: str,
+        headers: Mapping[str, str],
+        json_body: Mapping[str, Any],
+    ) -> Any:
+        """POST a JSON body to an allowlisted host+path; return parsed JSON.
+
+        Same SSRF guard as :meth:`get_json` — host allowlist + DNS public-IP check, https
+        only, bounded timeouts, response-size cap. Redirects are refused outright on POST
+        (no provider in the allowlist redirects a POST; following one could leak the body
+        or the Authorization header cross-host). ``headers`` (e.g. an API key) are supplied
+        by trusted adapter code and are never logged here. Error bodies are NOT read, so a
+        provider error can never echo a secret back into logs.
+        """
+        self._validate_host(host)
+        try:
+            with self._build_client() as client:
+                url = httpx.URL(scheme="https", host=host, path=path)
+                retries = 0
+                while True:
+                    request = client.build_request(
+                        "POST", url, json=dict(json_body), headers=dict(headers)
+                    )
+                    response = client.send(request, stream=True)
+                    try:
+                        if response.status_code == 429:
+                            if retries >= MAX_RETRIES_429:
+                                raise EgressError("Rate limited (429) after retries.")
+                            retries += 1
+                            self._sleeper(BACKOFF_BASE_SECONDS * (2 ** (retries - 1)))
+                            continue
+                        if response.is_redirect:
+                            raise CrossHostRedirectError("Refusing redirect on POST.")
+                        if response.status_code >= 400:
+                            # Do not read/surface the body (untrusted, possibly large).
+                            code = response.status_code
+                            raise EgressError(f"External request failed: HTTP {code}")
+                        return self._read_capped(response)
+                    finally:
+                        response.close()
+        except httpx.HTTPError as exc:
             raise EgressError(f"External request failed: {type(exc).__name__}") from exc
 
     # ── internals ─────────────────────────────────────────────────────────────
