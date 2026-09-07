@@ -6,6 +6,8 @@ Response-only; no internal models exposed.
 """
 from pydantic import BaseModel
 
+from noetarch.runs.schemas import RunSynthesis
+
 # Tuple aliases mirror the TS readonly-tuple contract (serialize as JSON arrays).
 TodayKPITuple = tuple[str, str, str]
 TodaySourceTuple = tuple[str, str, str]
@@ -32,6 +34,22 @@ class TodayFailure(BaseModel):
     body: str
 
 
+class TodayLatestRun(BaseModel):
+    """The newest real run's headline + grounded synthesis, surfaced on Today (WS3).
+
+    ``None`` when no real run has been executed yet (demo/empty mode).
+    """
+
+    id: str
+    question: str
+    status: str
+    frozen: int
+    screened: int
+    included: int
+    costUsd: float  # noqa: N815
+    synthesis: RunSynthesis | None = None
+
+
 class TodayData(BaseModel):
     project: str
     question: str
@@ -41,6 +59,7 @@ class TodayData(BaseModel):
     finished: list[TodayFinishedTuple]
     sources: list[TodaySourceTuple]
     files: list[TodayFileTuple]
+    latestRun: TodayLatestRun | None = None  # noqa: N815
 
     @classmethod
     def empty(cls) -> "TodayData":

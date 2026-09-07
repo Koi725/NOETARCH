@@ -4,11 +4,18 @@ from sqlalchemy.orm import Session
 
 from noetarch.modules.today.infrastructure.models import TodaySnapshotORM
 from noetarch.modules.today.schemas import TodayData
+from noetarch.runs.models import RunORM
 
 
 class TodayRepository:
     def __init__(self, session: Session) -> None:
         self._session = session
+
+    def latest_run(self) -> RunORM | None:
+        """Newest real run row (ISO ``created_at`` sorts lexicographically), or None."""
+        return self._session.execute(
+            select(RunORM).order_by(RunORM.created_at.desc()).limit(1)
+        ).scalar_one_or_none()
 
     def get(self) -> TodayData:
         row = self._session.execute(
