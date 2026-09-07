@@ -46,6 +46,34 @@ Config reference: `backend/.env.example` and `frontend/.env.example`. Health che
 `GET http://localhost:8000/api/v1/health/ready`. Offline connector smoke: `make smoke`.
 All gates: `make gates`. Pre-deployment security gates: `docs/security/PRE_DEPLOY_GATES.md`.
 
+### Build & run (one command, containerized)
+
+`scripts/build.sh` builds and starts the whole stack via docker compose, then **health-gates**
+(polls the backend `/api/v1/health/ready` and the frontend) and only prints the ready banner
+once both actually respond. Ports bind to `127.0.0.1` only.
+
+```bash
+./scripts/build.sh                 # DEMO seed (populated), external sources OFF
+./scripts/build.sh --no-seed --fresh   # clean "real mode": empty DB, volume reset
+# (or: make build ARGS="--no-seed --fresh")
+```
+
+- `--fresh` runs `docker compose down -v` first to reset the DB volume (clean slate).
+- `--no-seed` exports `NOETARCH_SEED_DEMO=false` for the run → migrations only, no seed rows.
+- External sources stay off unless you pass `NOETARCH_EXTERNAL_SOURCES_ENABLED=true`.
+
+Stop the stack with `docker compose down` (add `-v` to also drop the DB volume). Follow logs
+with `docker compose logs -f`.
+
+### Where real data will come from
+
+The demo seed populates every screen so the app is explorable offline. Populated **research**
+data (evidence, runs, decisions, history) will be produced by the **workflow engine** — the
+provider layer plus the run executor — which is a future phase. Until then, `--no-seed`
+(`NOETARCH_SEED_DEMO=false`) yields an intentionally empty app: the screens show onboarding
+empty-states ("No runs yet — start one"), not errors. The seed code is never removed; the flag
+only decides whether the demo rows are loaded.
+
 ## Current phase
 
 This repository currently contains governance, agent roles, RBAC, coordination protocols, a source-backed threat model, and a quarantined Ruflo integration assessment. Frontend and backend product development is intentionally out of scope.
