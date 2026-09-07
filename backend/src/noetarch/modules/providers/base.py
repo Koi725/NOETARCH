@@ -29,6 +29,8 @@ class ScreeningResult:
 
     Off-schema output is never obeyed: it is coerced to the safe ``uncertain`` default and
     flagged for human review. ``raw`` is a truncated copy of the model text for provenance.
+    ``relevance`` is a clamped 0-1 score; ``title_only`` marks a paper screened without an
+    abstract (on title + metadata) — never silently auto-excluded.
     """
 
     decision: ScreeningDecision
@@ -37,6 +39,8 @@ class ScreeningResult:
     input_tokens: int
     output_tokens: int
     raw: str
+    relevance: float = 0.0
+    title_only: bool = False
 
 
 @runtime_checkable
