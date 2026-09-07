@@ -1,3 +1,5 @@
+import type { RunSynthesis } from "./run";
+
 export type TodayKPITuple = readonly [string, string, string];
 export type TodaySourceTuple = readonly [string, string, string];
 export type TodayFileTuple = readonly [string, string, boolean];
@@ -22,6 +24,18 @@ export interface TodayFailure {
   body: string;
 }
 
+// The newest real run's headline + grounded synthesis, surfaced on Today (WS3).
+export interface TodayLatestRun {
+  id: string;
+  question: string;
+  status: string;
+  frozen: number;
+  screened: number;
+  included: number;
+  costUsd: number;
+  synthesis?: RunSynthesis | null;
+}
+
 export interface TodayData {
   project: string;
   question: string;
@@ -31,4 +45,5 @@ export interface TodayData {
   finished: readonly TodayFinishedTuple[];
   sources: readonly TodaySourceTuple[];
   files: readonly TodayFileTuple[];
+  latestRun?: TodayLatestRun | null;
 }

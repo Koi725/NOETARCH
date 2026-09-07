@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useShell } from "@/components/ApplicationShell";
 import { useTheme } from "@/components/ThemeProvider";
 import { fetchTodayData } from "@/services/TodayService";
-import type { TodayData } from "@/contracts/today";
+import type { TodayData, TodayLatestRun } from "@/contracts/today";
 import { useScreenTour, TodaySkeleton, TODAY_TOUR_KEY, TODAY_TOUR_STEPS } from "@/components/ui";
 import "@/tailwind/components/TodayOverview/TodayOverview.css";
 
@@ -24,6 +24,55 @@ function ComingSoonAction({ children, className, label }: ComingSoonActionProps)
       <span>{children}</span>
       <span className="no-coming-soon-label" aria-hidden="true">Coming soon</span>
     </button>
+  );
+}
+
+/** Newest real run + its grounded synthesis, shown on Today in real mode (WS3). */
+function LatestRunCard({ latest }: { latest: TodayLatestRun }) {
+  const synthesis = latest.synthesis ?? null;
+  return (
+    <section className="no-today-latest" aria-label="Most recent run">
+      <div className="no-today-latest-head">
+        <div>
+          <div className="no-card-kicker">Most recent run</div>
+          <h2 className="no-today-latest-question">{latest.question}</h2>
+        </div>
+        <Link
+          className="no-secondary-button"
+          href={`/evidence?run=${encodeURIComponent(latest.id)}`}
+        >
+          View evidence ({latest.frozen})
+        </Link>
+      </div>
+      <div className="no-today-latest-stats">
+        <span>Screened <strong>{latest.screened}</strong></span>
+        <span>Included <strong>{latest.included}</strong></span>
+        <span>Cost <strong>${latest.costUsd.toFixed(4)}</strong></span>
+      </div>
+      {synthesis && (synthesis.summary || synthesis.findings.length > 0) && (
+        <div className="no-today-synth">
+          <div className="no-today-synth-head">
+            <h3>Evidence synthesis</h3>
+            <span className={`no-today-ground ${synthesis.grounded ? "is-ok" : "is-warn"}`}>
+              {synthesis.grounded ? "Grounded" : "Grounding flags"}
+            </span>
+          </div>
+          {synthesis.summary && <p className="no-today-synth-summary">{synthesis.summary}</p>}
+          {synthesis.findings.length > 0 && (
+            <ul className="no-today-findings">
+              {synthesis.findings.slice(0, 5).map((f) => (
+                <li key={f.doi}>
+                  <span>{f.finding}</span>{" "}
+                  <a href={`https://doi.org/${f.doi}`} target="_blank" rel="noreferrer noopener">
+                    {f.title}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+    </section>
   );
 }
 
@@ -81,22 +130,29 @@ export function TodayOverview() {
     todayData.sources.length === 0 &&
     todayData.files.length === 0
   ) {
+    const latest = todayData.latestRun;
     return (
       <div className="no-today-page">
         <header className="no-today-header">
           <div>
             <div className="no-eyebrow no-today-eyebrow">Workspace · this device</div>
             <h1>Your workspace is ready</h1>
-            <p>No runs yet. When you start a review, what&apos;s running, waiting on you, and finished will appear here.</p>
+            <p>{latest
+              ? "Your most recent run and its evidence synthesis are below."
+              : "No runs yet. When you start a review, what's running, waiting on you, and finished will appear here."}</p>
           </div>
           <div className="no-today-actions">
-            <Link className="no-primary-button" href="/guided-review">Start a review</Link>
+            <Link className="no-primary-button" href="/live-run">Start a review</Link>
             <button className="no-secondary-button" type="button" onClick={openPalette}>⌘K</button>
           </div>
         </header>
-        <div className="no-today-empty" role="status">
-          <p>Nothing is running yet — this is real mode with an empty workspace, not an error.</p>
-        </div>
+        {latest ? (
+          <LatestRunCard latest={latest} />
+        ) : (
+          <div className="no-today-empty" role="status">
+            <p>Nothing is running yet — this is real mode with an empty workspace, not an error.</p>
+          </div>
+        )}
       </div>
     );
   }
