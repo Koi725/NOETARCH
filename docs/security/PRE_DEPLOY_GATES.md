@@ -39,6 +39,32 @@ These are **required**, not optional, before binding beyond loopback or serving 
 5. **Rate limiting** on write and `/search` endpoints.
 6. **TLS termination** at the infrastructure/reverse-proxy layer.
 
+## BYOK provider keys — key-at-rest caveat (v1)
+
+The v1 BYOK layer stores each provider API key **encrypted at rest** (Fernet / `cryptography`)
+in the `provider_credentials` table. The write-only API never returns the plaintext (GET
+returns only `sk-…last4`), the key is redacted from logs (defensive filter + never passed to
+the logger), and it never enters the audit log (audit stores a `provider|action` hash only).
+Outbound provider calls (`api.anthropic.com`) go through the single `core/egress.py` guard —
+no new unguarded egress path. Real runs are doubly gated: `NOETARCH_EXTERNAL_SOURCES_ENABLED=true`
+**and** an enabled key; with no key the app runs normally and only real runs are blocked.
+
+**Blocking precondition — master-key custody.** The Fernet master key comes from
+`NOETARCH_SECRET_KEY`; if unset, a key file is generated at `NOETARCH_SECRET_KEY_PATH`
+(default `/data/secret.key`, mode 0600) and reused.
+
+1. **Key-in-volume is acceptable only for local/single-user.** Before any hosted/multi-user
+   deployment, source `NOETARCH_SECRET_KEY` from a secrets manager (KMS/Vault) — do **not**
+   bake the key file into an image or a shared volume.
+2. **Losing the master key = losing every stored provider key** (ciphertext becomes
+   unreadable). Rotating the master key requires re-entering provider keys. Back up / escrow
+   the master key out of band.
+3. **Provider egress is real network I/O.** Enabling a key + external sources makes outbound
+   calls to the provider with the user's key and (for screening) untrusted abstract text —
+   which is delimited as data and never executed. Rate limiting on `/runs` remains a hosted
+   precondition (see gate 5 above).
+
 ## Explicitly out of scope for M12
-The AI workflow engine, additional external providers, and auth were **not** built in M12
-(finalization only) and remain future, separately-authorized milestones.
+The AI workflow engine and auth were finalized/extended in later work. The v1 run executor
+(provider layer + linear executor) is additive and flag-gated; multi-provider support beyond
+the documented Anthropic adapter remains future work.
