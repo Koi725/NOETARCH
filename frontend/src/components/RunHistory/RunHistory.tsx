@@ -350,7 +350,11 @@ function RunHistoryView({ runs }: { runs: Run[] }) {
           />
         ))}
         {filtered.length === 0 && (
-          <li className="no-run-empty">No runs match this filter.</li>
+          <li className="no-run-empty">
+            {effectiveRuns.length === 0
+              ? "No runs yet — start a review and it will show up here."
+              : "No runs match this filter."}
+          </li>
         )}
       </ul>
 

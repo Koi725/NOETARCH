@@ -411,7 +411,11 @@ export function EvidenceLibrary() {
             {filter !== "all" || search ? " (filtered)" : ""}
           </div>
           {filtered.length === 0 ? (
-            <p className="no-ev-empty">No records match the current filter.</p>
+            <p className="no-ev-empty">
+              {records.length === 0
+                ? "No evidence yet — add or fetch sources to build your library."
+                : "No records match the current filter."}
+            </p>
           ) : (
             <ul className="no-ev-record-list" aria-label="Evidence records">
               {filtered.map((rec) => {

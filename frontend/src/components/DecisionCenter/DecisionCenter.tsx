@@ -335,7 +335,11 @@ function DecisionCenterView({ initialDecisions }: { initialDecisions: Decision[]
             />
           ))}
           {pending.length === 0 && (
-            <p className="no-decision-empty">No pending decisions.</p>
+            <p className="no-decision-empty">
+              {decisions.length === 0
+                ? "No decisions yet — they appear here when a run needs your call."
+                : "No pending decisions."}
+            </p>
           )}
         </div>
       </section>
