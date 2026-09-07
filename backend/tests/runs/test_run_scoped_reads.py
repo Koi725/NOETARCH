@@ -7,7 +7,7 @@ Populates a run via the executor (mocked provider + search, NO network) and asse
 """
 import os
 import tempfile
-from collections.abc import Callable, Iterator
+from collections.abc import Iterator
 
 import pytest
 from sqlalchemy import Engine, create_engine
@@ -17,50 +17,12 @@ from noetarch.core.database import Base
 from noetarch.database import registry
 from noetarch.modules.decisions.repository import DecisionRepository
 from noetarch.modules.evidence.repository import EvidenceRepository
-from noetarch.modules.evidence.schemas import EvidenceRecord
+from noetarch.modules.evidence.retriever import Retriever
 from noetarch.modules.evidence.service import EvidenceService
 from noetarch.modules.history.repository import HistoryRepository
-from noetarch.modules.providers.base import CompletionResult
 from noetarch.runs.executor import RunExecutor
 from noetarch.runs.schemas import RunRequest
-
-
-class FakeProvider:
-    model = "claude-haiku-4-5"
-
-    def __init__(self, outputs: list[str]) -> None:
-        self._outputs = outputs
-        self.calls = 0
-
-    def complete(self, *, system: str, user: str, max_tokens: int) -> CompletionResult:
-        idx = min(self.calls, len(self._outputs) - 1)
-        self.calls += 1
-        return CompletionResult(text=self._outputs[idx], input_tokens=100, output_tokens=100)
-
-
-def _record(i: int) -> EvidenceRecord:
-    return EvidenceRecord(
-        id=f"oa-p{i}",
-        title=f"Paper {i}",
-        authors="A. Author",
-        year=2022,
-        journal="Journal",
-        doi=f"10.1/p{i}",
-        status="checked",
-        sources=[],
-        provenance=[],
-        agreementCount=1,
-        totalSources=1,
-    )
-
-
-def _search(
-    pairs: list[tuple[EvidenceRecord, str]],
-) -> Callable[[str], list[tuple[EvidenceRecord, str]]]:
-    def _fn(_query: str) -> list[tuple[EvidenceRecord, str]]:
-        return pairs
-
-    return _fn
+from tests.runs.fakes import FakeSource, PhaseProvider, make_record
 
 
 @pytest.fixture
@@ -79,9 +41,10 @@ def session() -> Iterator[Session]:
 
 
 def _run(session: Session, run_id: str, question: str, n: int) -> None:
-    pairs = [(_record(i), f"abstract {i}") for i in range(n)]
-    provider = FakeProvider(['{"decision":"include","reason":"ok"}'])
-    RunExecutor(session, provider=provider, search_fn=_search(pairs)).execute(
+    pairs = [(make_record(i), f"MARK_INCLUDE abstract {i}") for i in range(n)]
+    provider = PhaseProvider()
+    retriever = Retriever([FakeSource(pairs)])
+    RunExecutor(session, provider=provider, retriever=retriever).execute(
         RunRequest(question=question), run_id=run_id
     )
 
