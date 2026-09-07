@@ -12,7 +12,9 @@ from sqlalchemy.orm import Session
 
 from noetarch.core.config import get_settings
 from noetarch.core.egress import EgressClient
+from noetarch.modules.evidence.infrastructure.crossref import CrossrefProvider
 from noetarch.modules.evidence.infrastructure.openalex import OpenAlexProvider
+from noetarch.modules.evidence.retriever import Retriever
 from noetarch.modules.providers.factory import build_provider
 from noetarch.runs.executor import RunExecutor
 from noetarch.runs.schemas import RunStatus
@@ -42,4 +44,6 @@ def build_executor(session: Session) -> RunExecutor:
         )
     egress = EgressClient(contact_email=settings.egress_contact_email)
     openalex = OpenAlexProvider(egress, contact_email=settings.egress_contact_email)
-    return RunExecutor(session, provider=provider, search_fn=openalex.search_with_abstracts)
+    crossref = CrossrefProvider(egress, contact_email=settings.egress_contact_email)
+    retriever = Retriever([openalex, crossref])
+    return RunExecutor(session, provider=provider, retriever=retriever)
