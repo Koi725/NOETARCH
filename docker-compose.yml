@@ -9,19 +9,23 @@ services:
     environment:
       NOETARCH_CORS_ALLOW_ORIGINS: "http://localhost:3000"
       NOETARCH_DATABASE_URL: "sqlite:////data/noetarch.db"
+      # Demo seed on by default; set NOETARCH_SEED_DEMO=false for a clean, empty ("real") DB.
+      NOETARCH_SEED_DEMO: "${NOETARCH_SEED_DEMO:-true}"
       NOETARCH_EXTERNAL_SOURCES_ENABLED: "${NOETARCH_EXTERNAL_SOURCES_ENABLED:-false}"
       NOETARCH_EGRESS_CONTACT_EMAIL: "${NOETARCH_EGRESS_CONTACT_EMAIL:-}"
     volumes:
       - noetarch-db:/data
+    # Bind to loopback only — never expose the API on all host interfaces.
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
 
   frontend:
     build: ./frontend
     environment:
       NEXT_PUBLIC_API_BASE: "http://localhost:8000"
+    # Bind to loopback only — never expose the frontend on all host interfaces.
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     depends_on:
       - backend
 

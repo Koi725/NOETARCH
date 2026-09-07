@@ -1,5 +1,5 @@
 # NOETARCH developer entry points.
-.PHONY: dev up down smoke gates
+.PHONY: dev up down build smoke gates
 
 # One-command local dev (backend auto-migrate+seed + frontend, pre-wired). No API key needed.
 dev:
@@ -11,6 +11,11 @@ up:
 
 down:
 	docker compose down
+
+# One command → whole stack up + health-gated. Flags pass through, e.g.:
+#   make build ARGS="--no-seed --fresh"
+build:
+	./scripts/build.sh $(ARGS)
 
 # Offline connector smoke (read + Decisions write/audit + mocked OpenAlex search).
 smoke:
