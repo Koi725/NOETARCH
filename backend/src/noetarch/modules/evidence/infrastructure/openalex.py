@@ -18,6 +18,22 @@ from noetarch.modules.evidence.schemas import EvidenceRecord, EvidenceSource
 OPENALEX_HOST = "api.openalex.org"
 OPENALEX_PATH = "/works"
 MAX_RESULTS = 50
+# Ranked (run) search: title/abstract-scoped, abstracts required, articles/reviews only.
+RANKED_SELECT = (
+    "id,doi,title,display_name,publication_year,type,authorships,"
+    "primary_location,abstract_inverted_index"
+)
+RANKED_PER_PAGE = 25
+RANKED_MAX_PAGES = 2
+
+
+def _sanitise_filter_value(value: str) -> str:
+    """Strip characters that carry meaning in the OpenAlex ``filter=`` grammar.
+
+    ``,`` separates filters (AND), ``|`` separates OR-values within one filter, ``:`` splits
+    field from value. Removing them keeps a free-text query from smuggling extra clauses.
+    """
+    return " ".join(value.replace(",", " ").replace("|", " ").replace(":", " ").split())
 MAX_TITLE = 500
 MAX_AUTHORS = 500
 MAX_JOURNAL = 300
@@ -52,6 +68,7 @@ class OpenAlexWork(BaseModel):
     title: str | None = None
     display_name: str | None = None
     publication_year: int | None = None
+    type: str | None = None
     authorships: list[_OpenAlexAuthorship] = Field(default_factory=list)
     primary_location: _OpenAlexLocation | None = None
     abstract_inverted_index: dict[str, list[int]] | None = None
@@ -76,9 +93,15 @@ def _reconstruct_abstract(inverted: dict[str, list[int]] | None) -> str:
     return " ".join(word for _, word in positioned)[:MAX_ABSTRACT]
 
 
+class _OpenAlexMeta(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    next_cursor: str | None = None
+
+
 class OpenAlexResponse(BaseModel):
     model_config = ConfigDict(extra="ignore")
     results: list[OpenAlexWork] = Field(default_factory=list)
+    meta: _OpenAlexMeta | None = None
 
 
 def _clean_doi(raw: str | None) -> str | None:
@@ -143,6 +166,60 @@ class OpenAlexProvider:
             record = self._to_record(work, retrieved_at)
             abstract = _reconstruct_abstract(work.abstract_inverted_index)
             out.append((record, abstract))
+        return out
+
+    def search_ranked(
+        self,
+        query: str,
+        *,
+        year_from: int | None = None,
+        year_to: int | None = None,
+        per_page: int = RANKED_PER_PAGE,
+        max_pages: int = RANKED_MAX_PAGES,
+    ) -> list[tuple[EvidenceRecord, str]]:
+        """Targeted search for a run: title/abstract-scoped, has-abstract, article/review.
+
+        Uses ``filter=title_and_abstract.search:…`` (not the default citation-ranked
+        ``search`` param), restricts to works that have an abstract and are articles or
+        reviews, applies the year range, and pages with a cursor. Verified against the live
+        OpenAlex ``/works`` API. Returns (record, reconstructed-abstract) pairs.
+        """
+        term = _sanitise_filter_value(query)
+        if not term:
+            return []
+        filters = [
+            f"title_and_abstract.search:{term}",
+            "has_abstract:true",
+            "type:article|review",
+        ]
+        if year_from is not None:
+            filters.append(f"from_publication_date:{year_from:04d}-01-01")
+        if year_to is not None:
+            filters.append(f"to_publication_date:{year_to:04d}-12-31")
+        filter_value = ",".join(filters)
+
+        out: list[tuple[EvidenceRecord, str]] = []
+        cursor = "*"
+        retrieved_at = datetime.now(tz=UTC).isoformat()
+        for _ in range(max(1, max_pages)):
+            params: dict[str, str] = {
+                "filter": filter_value,
+                "per_page": str(per_page),
+                "select": RANKED_SELECT,
+                "cursor": cursor,
+            }
+            if self._contact_email:
+                params["mailto"] = self._contact_email
+            raw = self._egress.get_json(host=OPENALEX_HOST, path=OPENALEX_PATH, params=params)
+            parsed = OpenAlexResponse.model_validate(raw)
+            for work in parsed.results:
+                record = self._to_record(work, retrieved_at)
+                abstract = _reconstruct_abstract(work.abstract_inverted_index)
+                out.append((record, abstract))
+            next_cursor = parsed.meta.next_cursor if parsed.meta is not None else None
+            if not next_cursor or not parsed.results:
+                break
+            cursor = next_cursor
         return out
 
     @staticmethod
