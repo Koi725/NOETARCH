@@ -31,6 +31,18 @@ class Settings(BaseSettings):
     external_sources_enabled: bool = False
     # Contact email for the polite User-Agent (OpenAlex polite pool). Not a secret.
     egress_contact_email: str = ""
+    # BYOK key vault master key (Fernet, urlsafe-base64). If unset, a key file is
+    # generated at ``secret_key_path`` (0600) and reused. Losing the master key makes
+    # every stored provider key unreadable — see docs/security/PRE_DEPLOY_GATES.md.
+    # NEVER commit a real value; this is read from the environment only.
+    secret_key: str = ""
+    # Where the generated master key is persisted when NOETARCH_SECRET_KEY is unset.
+    # Defaults to the container data volume; override for local/dev or tests.
+    secret_key_path: str = "/data/secret.key"  # noqa: S105 - a filesystem path, not a secret
+    # Default provider + model for real runs. BYOK: a key must be configured and enabled
+    # before any real run executes. The provider layer is OFF unless a key is present.
+    llm_provider: str = "anthropic"
+    llm_model: str = "claude-haiku-4-5"
 
     @property
     def cors_origins(self) -> list[str]:
