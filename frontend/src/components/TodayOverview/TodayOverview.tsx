@@ -9,6 +9,9 @@ import type { TodayData } from "@/contracts/today";
 import { useScreenTour, TodaySkeleton, TODAY_TOUR_KEY, TODAY_TOUR_STEPS } from "@/components/ui";
 import "@/tailwind/components/TodayOverview/TodayOverview.css";
 
+// Explicit fetch state so we render skeleton only while loading — never for empty data.
+type LoadStatus = "loading" | "ready" | "error";
+
 type ComingSoonActionProps = {
   children: React.ReactNode;
   className: string;
@@ -27,6 +30,7 @@ function ComingSoonAction({ children, className, label }: ComingSoonActionProps)
 export function TodayOverview() {
   const { plain } = useTheme();
   const { openPalette } = useShell();
+  const [status, setStatus] = useState<LoadStatus>("loading");
   const [todayData, setTodayData] = useState<TodayData | null>(null);
   const [error, setError] = useState<string | null>(null);
   useScreenTour(TODAY_TOUR_KEY, TODAY_TOUR_STEPS);
@@ -35,11 +39,15 @@ export function TodayOverview() {
     let cancelled = false;
     fetchTodayData()
       .then((data) => {
-        if (!cancelled) setTodayData(data);
+        if (!cancelled) {
+          setTodayData(data);
+          setStatus("ready");
+        }
       })
       .catch((err: unknown) => {
         if (!cancelled) {
           setError(err instanceof Error ? err.message : "Failed to load today's workspace.");
+          setStatus("error");
         }
       });
     return () => {
@@ -47,7 +55,7 @@ export function TodayOverview() {
     };
   }, []);
 
-  if (error) {
+  if (status === "error") {
     return (
       <div className="no-today-page">
         <div role="alert" className="no-today-error">
@@ -57,10 +65,38 @@ export function TodayOverview() {
     );
   }
 
-  if (!todayData) {
+  if (status === "loading" || !todayData) {
     return (
       <div className="no-today-page" role="status" aria-label="Loading today's workspace">
         <TodaySkeleton />
+      </div>
+    );
+  }
+
+  // Real/empty mode: nothing running, waiting, or finished. Intentional empty state.
+  if (
+    todayData.run.title === "" &&
+    todayData.waiting.title === "" &&
+    todayData.finished.length === 0 &&
+    todayData.sources.length === 0 &&
+    todayData.files.length === 0
+  ) {
+    return (
+      <div className="no-today-page">
+        <header className="no-today-header">
+          <div>
+            <div className="no-eyebrow no-today-eyebrow">Workspace · this device</div>
+            <h1>Your workspace is ready</h1>
+            <p>No runs yet. When you start a review, what&apos;s running, waiting on you, and finished will appear here.</p>
+          </div>
+          <div className="no-today-actions">
+            <Link className="no-primary-button" href="/guided-review">Start a review</Link>
+            <button className="no-secondary-button" type="button" onClick={openPalette}>⌘K</button>
+          </div>
+        </header>
+        <div className="no-today-empty" role="status">
+          <p>Nothing is running yet — this is real mode with an empty workspace, not an error.</p>
+        </div>
       </div>
     );
   }

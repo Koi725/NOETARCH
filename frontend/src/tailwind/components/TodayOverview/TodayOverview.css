@@ -120,3 +120,4 @@
   .no-waiting-card .no-card-actions > * { min-height: 48px; }
   .no-run-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+.no-today-empty { margin: 24px 32px; padding: 22px 24px; border: 1px dashed var(--line); color: var(--ink2); font: 400 13.5px/1.5 var(--font-body); }

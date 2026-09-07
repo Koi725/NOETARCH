@@ -119,3 +119,6 @@ kbd { display: inline-flex; align-items: center; justify-content: center; min-wi
   .no-gr-key-btn { min-height: 48px; }
   .no-gr-decision-buttons { grid-template-columns: 1fr; }
 }
+.no-gr-empty { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; max-width: 560px; margin: 48px auto; padding: 28px 30px; border: 1px dashed var(--line); text-align: left; }
+.no-gr-empty h1 { margin: 0; color: var(--ink); font: 800 clamp(20px, 2.6vw, 28px)/1.05 var(--font-heading); letter-spacing: -.025em; }
+.no-gr-empty p { margin: 0; color: var(--ink2); font: 400 13.5px/1.5 var(--font-body); }

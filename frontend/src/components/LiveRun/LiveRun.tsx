@@ -1,10 +1,14 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import { fetchLiveRunData, type LiveRunData } from "@/services/RunService";
 import type { LiveRunLayout, StepState } from "./LiveRun_types";
 import { useScreenTour, LiveRunSkeleton, LIVE_RUN_TOUR_KEY, LIVE_RUN_TOUR_STEPS } from "@/components/ui";
 import "@/tailwind/components/LiveRun/LiveRun.css";
+
+// Explicit fetch state so we render skeleton only while loading — never for empty data.
+type LoadStatus = "loading" | "ready" | "error";
 
 function stepStateLabel(state: StepState, isPaused: boolean): string {
   if (state === "running" && isPaused) return "paused";
@@ -200,6 +204,7 @@ function SimNotice({ label }: SimNoticeProps) {
 
 export function LiveRun() {
   useScreenTour(LIVE_RUN_TOUR_KEY, LIVE_RUN_TOUR_STEPS);
+  const [status, setStatus] = useState<LoadStatus>("loading");
   const [data, setData] = useState<LiveRunData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPaused, setIsPaused] = useState(false);
@@ -213,11 +218,15 @@ export function LiveRun() {
     let cancelled = false;
     fetchLiveRunData()
       .then((d) => {
-        if (!cancelled) setData(d);
+        if (!cancelled) {
+          setData(d);
+          setStatus("ready");
+        }
       })
       .catch((err: unknown) => {
         if (!cancelled) {
           setError(err instanceof Error ? err.message : "Failed to load the active run.");
+          setStatus("error");
         }
       });
     return () => {
@@ -268,7 +277,7 @@ export function LiveRun() {
       ? "Layout: wide left"
       : "Layout: wide right";
 
-  if (error) {
+  if (status === "error") {
     return (
       <div className="no-live-page">
         <div role="alert" className="no-live-error">
@@ -278,7 +287,7 @@ export function LiveRun() {
     );
   }
 
-  if (!data) {
+  if (status === "loading" || !data) {
     return (
       <div className="no-live-page" role="status" aria-label="Loading the active run">
         <LiveRunSkeleton />
@@ -287,6 +296,25 @@ export function LiveRun() {
   }
 
   const { meta, steps, stepInspector, kpis, events, decisions, evidenceCards } = data;
+
+  // Real/empty mode: no active run. Intentional empty state, not a skeleton or error.
+  if (steps.length === 0 && meta.runId === "") {
+    return (
+      <div className="no-live-page">
+        <div className="no-live-empty" role="status">
+          <span className="no-eyebrow no-live-eyebrow">Live run</span>
+          <h1 className="no-live-title">No run is active</h1>
+          <p>
+            Nothing is running right now. Start a review and its steps, events, and evidence
+            will stream in here.
+          </p>
+          <Link className="no-primary-button" href="/guided-review">
+            Start a review
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`no-live-page is-layout-${layout}`}>

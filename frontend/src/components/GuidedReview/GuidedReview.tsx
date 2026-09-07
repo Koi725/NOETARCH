@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useId } from "react";
+import Link from "next/link";
 import { fetchReviewData, type GuidedReviewData } from "@/services/GuidedReviewService";
 import type {
   Decision,
@@ -9,6 +10,9 @@ import type {
 } from "./GuidedReview_types";
 import { useScreenTour, GuidedReviewSkeleton, GUIDED_REVIEW_TOUR_KEY, GUIDED_REVIEW_TOUR_STEPS } from "@/components/ui";
 import "@/tailwind/components/GuidedReview/GuidedReview.css";
+
+// Explicit fetch state so we render skeleton only while loading — never for empty data.
+type LoadStatus = "loading" | "ready" | "error";
 
 function decisionLabel(d: Exclude<Decision, null>): string {
   if (d === "include") return "Include";
@@ -36,6 +40,7 @@ type ReviewState = {
 
 export function GuidedReview() {
   useScreenTour(GUIDED_REVIEW_TOUR_KEY, GUIDED_REVIEW_TOUR_STEPS);
+  const [status, setStatus] = useState<LoadStatus>("loading");
   const [data, setData] = useState<GuidedReviewData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -43,11 +48,15 @@ export function GuidedReview() {
     let cancelled = false;
     fetchReviewData()
       .then((d) => {
-        if (!cancelled) setData(d);
+        if (!cancelled) {
+          setData(d);
+          setStatus("ready");
+        }
       })
       .catch((err: unknown) => {
         if (!cancelled) {
           setError(err instanceof Error ? err.message : "Failed to load the review.");
+          setStatus("error");
         }
       });
     return () => {
@@ -55,7 +64,7 @@ export function GuidedReview() {
     };
   }, []);
 
-  if (error) {
+  if (status === "error") {
     return (
       <div className="no-gr-page">
         <div role="alert" className="no-gr-error">
@@ -65,10 +74,29 @@ export function GuidedReview() {
     );
   }
 
-  if (!data) {
+  if (status === "loading" || !data) {
     return (
       <div className="no-gr-page" role="status" aria-label="Loading the review">
         <GuidedReviewSkeleton />
+      </div>
+    );
+  }
+
+  // Real/empty mode: no papers to review. Intentional empty state, not a skeleton.
+  if (data.currentPaper.id === "" && data.progress.total === 0) {
+    return (
+      <div className="no-gr-page">
+        <div className="no-gr-empty" role="status">
+          <span className="no-eyebrow">Guided review</span>
+          <h1>No papers to review yet</h1>
+          <p>
+            Your review queue is empty. Start a run to gather papers, and they&apos;ll line up
+            here for include / exclude decisions.
+          </p>
+          <Link className="no-primary-button" href="/live-run">
+            Start a review
+          </Link>
+        </div>
       </div>
     );
   }
