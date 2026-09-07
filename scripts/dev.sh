@@ -2,22 +2,26 @@
 # One-command local dev: brings up the backend (auto-migrate + seed) and the frontend,
 # pre-wired so the app connects with zero manual env editing.
 #
-#   scripts/dev.sh                       # app on http://localhost:3000, external sources OFF
-#   NOETARCH_EXTERNAL_SOURCES_ENABLED=true scripts/dev.sh   # enable OpenAlex /search
+#   scripts/dev.sh                       # real/empty app on http://localhost:3000, external ON
+#   NOETARCH_SEED_DEMO=true scripts/dev.sh                  # load the demo dataset instead
+#   NOETARCH_EXTERNAL_SOURCES_ENABLED=false scripts/dev.sh  # run fully offline (no OpenAlex)
 #
-# Requires: uv (https://docs.astral.sh/uv/) and Node/npm. No API keys are needed — with
-# external sources OFF (default) the app runs fully on local seed data.
+# Requires: uv (https://docs.astral.sh/uv/) and Node/npm. The app runs with no key — real
+# runs stay gated until you connect a provider key in the UI (Models & Policy). Egress is on
+# by default but constrained to the allowlist.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 BACKEND_PORT="${BACKEND_PORT:-8000}"
 FRONTEND_PORT="${FRONTEND_PORT:-3000}"
-EXTERNAL="${NOETARCH_EXTERNAL_SOURCES_ENABLED:-false}"
+EXTERNAL="${NOETARCH_EXTERNAL_SOURCES_ENABLED:-true}"
+SEED_DEMO="${NOETARCH_SEED_DEMO:-false}"
 
 # ── Backend: env pre-wired, migrate, seed, serve ────────────────────────────
 cd "$ROOT/backend"
 export NOETARCH_CORS_ALLOW_ORIGINS="http://localhost:${FRONTEND_PORT}"
 export NOETARCH_EXTERNAL_SOURCES_ENABLED="$EXTERNAL"
+export NOETARCH_SEED_DEMO="$SEED_DEMO"
 export NOETARCH_DATABASE_URL="${NOETARCH_DATABASE_URL:-sqlite:///./noetarch.db}"
 
 echo "› Installing backend deps (uv sync)…"

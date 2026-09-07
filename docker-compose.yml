@@ -2,16 +2,21 @@
 # the frontend, pre-wired. CORS is set to the frontend origin and NEXT_PUBLIC_API_BASE to the
 # backend, so the app connects with zero manual env editing.
 #
-# Toggle external sources (OpenAlex): NOETARCH_EXTERNAL_SOURCES_ENABLED=true docker compose up
+# Fresh-start defaults ship a REAL, runnable research app: no demo seed rows, external sources
+# (OpenAlex) ON. A plain `./scripts/build.sh` — no env vars — brings up a clean, empty workspace
+# ready for the first real run once a provider key is connected in the UI.
+#   Load the demo dataset instead:  NOETARCH_SEED_DEMO=true docker compose up
+#   Turn external sources off:      NOETARCH_EXTERNAL_SOURCES_ENABLED=false docker compose up
 services:
   backend:
     build: ./backend
     environment:
       NOETARCH_CORS_ALLOW_ORIGINS: "http://localhost:3000"
       NOETARCH_DATABASE_URL: "sqlite:////data/noetarch.db"
-      # Demo seed on by default; set NOETARCH_SEED_DEMO=false for a clean, empty ("real") DB.
-      NOETARCH_SEED_DEMO: "${NOETARCH_SEED_DEMO:-true}"
-      NOETARCH_EXTERNAL_SOURCES_ENABLED: "${NOETARCH_EXTERNAL_SOURCES_ENABLED:-false}"
+      # Real mode by default (clean, empty DB); set NOETARCH_SEED_DEMO=true for the demo dataset.
+      NOETARCH_SEED_DEMO: "${NOETARCH_SEED_DEMO:-false}"
+      # Egress stays behind this single flag AND the allowlist; ON by default so real runs work.
+      NOETARCH_EXTERNAL_SOURCES_ENABLED: "${NOETARCH_EXTERNAL_SOURCES_ENABLED:-true}"
       NOETARCH_EGRESS_CONTACT_EMAIL: "${NOETARCH_EGRESS_CONTACT_EMAIL:-}"
     volumes:
       - noetarch-db:/data

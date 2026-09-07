@@ -2,14 +2,14 @@
 # One-command containerized build: bring the whole NOETARCH stack up via docker compose
 # and health-gate until the backend and frontend are actually ready before returning.
 #
-#   scripts/build.sh                       # DEMO seed, external sources OFF (defaults)
-#   scripts/build.sh --no-seed             # real/empty DB (NOETARCH_SEED_DEMO=false)
+#   scripts/build.sh                       # REAL/empty DB, external sources ON (defaults)
+#   scripts/build.sh --seed                # load the DEMO dataset (NOETARCH_SEED_DEMO=true)
 #   scripts/build.sh --fresh               # reset the DB volume first, then rebuild
-#   scripts/build.sh --no-seed --fresh     # clean slate + real/empty mode
+#   scripts/build.sh --seed --fresh        # clean slate + demo dataset
 #
 # Flags may also come from the environment:
-#   NOETARCH_SEED_DEMO=false                # same as --no-seed
-#   NOETARCH_EXTERNAL_SOURCES_ENABLED=true  # enable OpenAlex /search (default false)
+#   NOETARCH_SEED_DEMO=true                 # same as --seed (default false → real/empty)
+#   NOETARCH_EXTERNAL_SOURCES_ENABLED=false # disable OpenAlex /search (default true)
 #   NOETARCH_BUILD_TIMEOUT=60               # per-service health-gate timeout, seconds
 #
 # Security: ports are bound to loopback only (see docker-compose.yml); nothing binds to
@@ -26,16 +26,18 @@ HEALTH_URL="${BACKEND_URL}/api/v1/health/ready"
 TIMEOUT="${NOETARCH_BUILD_TIMEOUT:-60}"
 
 FRESH=0
+SEED=0
 NO_SEED=0
 
 usage() {
-  sed -n '2,16p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+  sed -n '2,13p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
 }
 
 for arg in "$@"; do
   case "$arg" in
     --fresh) FRESH=1 ;;
-    --no-seed) NO_SEED=1 ;;
+    --seed) SEED=1 ;;
+    --no-seed) NO_SEED=1 ;;  # retained for back-compat; real/empty is now the default
     -h|--help) usage; exit 0 ;;
     *) echo "error: unknown argument '$arg' (try --help)" >&2; exit 2 ;;
   esac
@@ -49,13 +51,17 @@ docker compose version >/dev/null 2>&1 || {
 command -v curl >/dev/null 2>&1 || {
   echo "error: 'curl' not found; it is required for the health-gate." >&2; exit 1; }
 
-# ── Mode: seed + external sources (env-overridable, safe defaults) ───────────
-if [ "$NO_SEED" -eq 1 ]; then
+# ── Mode: seed + external sources (env-overridable, real-by-default) ─────────
+# Real/empty is the default so a plain `./scripts/build.sh` ships a runnable research app.
+# --seed loads the demo dataset; --no-seed is a no-op alias kept for back-compat.
+if [ "$SEED" -eq 1 ]; then
+  export NOETARCH_SEED_DEMO=true
+elif [ "$NO_SEED" -eq 1 ]; then
   export NOETARCH_SEED_DEMO=false
 else
-  export NOETARCH_SEED_DEMO="${NOETARCH_SEED_DEMO:-true}"
+  export NOETARCH_SEED_DEMO="${NOETARCH_SEED_DEMO:-false}"
 fi
-export NOETARCH_EXTERNAL_SOURCES_ENABLED="${NOETARCH_EXTERNAL_SOURCES_ENABLED:-false}"
+export NOETARCH_EXTERNAL_SOURCES_ENABLED="${NOETARCH_EXTERNAL_SOURCES_ENABLED:-true}"
 
 if [ "${NOETARCH_SEED_DEMO}" = "false" ]; then
   SEED_MODE="REAL (empty DB — no seed rows)"
