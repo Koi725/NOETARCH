@@ -75,3 +75,9 @@
   .no-decision-btn--reject,
   .no-decision-btn--alt { width: 100%; }
 }
+
+/* Screening claim: title-only marker (paper had no abstract; screened on metadata). */
+.no-decision-titleonly {
+  color: var(--ink4);
+  font-size: 12px;
+}

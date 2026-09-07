@@ -44,6 +44,39 @@ function RiskGlyph({ risk }: { risk: Decision["risk"] }) {
   return <ShieldCheck {...props} />;
 }
 
+/** ISO timestamps → concise local date-time; human strings ("~40s") pass through; "" → "—". */
+function formatTime(time: string): string {
+  if (!time) return "—";
+  if (!/^\d{4}-\d{2}-\d{2}T/.test(time)) return time;
+  const d = new Date(time);
+  if (Number.isNaN(d.getTime())) return time;
+  return d.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
+}
+
+interface ScreeningClaim {
+  decision: string;
+  relevance?: number;
+  titleOnly: boolean;
+}
+
+/** A run's screening claim is stored as JSON in `payload`. Render it structured, not raw. */
+function parseScreeningClaim(payload?: string): ScreeningClaim | null {
+  if (!payload) return null;
+  try {
+    const data = JSON.parse(payload) as Record<string, unknown>;
+    if (data && data.source === "model" && typeof data.decision === "string") {
+      return {
+        decision: data.decision,
+        relevance: typeof data.relevance === "number" ? data.relevance : undefined,
+        titleOnly: data.title_only === true,
+      };
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
+
 function actionToStatus(action: DecisionActionType): DecisionStatus {
   if (action === "approve") return "approved";
   if (action === "reject") return "rejected";
@@ -77,6 +110,7 @@ function DecisionCard({
   onAction: (action: DecisionActionType) => void;
 }) {
   const detailId = useId();
+  const claim = parseScreeningClaim(decision.payload);
 
   const displayStatus: DecisionStatus = ui.optimistic
     ? actionToStatus(ui.optimistic)
@@ -118,16 +152,34 @@ function DecisionCard({
 
       <div className="no-decision-card__body">
         <dl className="no-decision-facts">
-          {decision.payload && (
+          {claim ? (
             <>
-              <dt>Payload</dt>
-              <dd>{decision.payload}</dd>
+              <dt>Decision</dt>
+              <dd>
+                {claim.decision}
+                {claim.titleOnly && (
+                  <span className="no-decision-titleonly"> · title-only</span>
+                )}
+              </dd>
+              {claim.relevance !== undefined && (
+                <>
+                  <dt>Relevance</dt>
+                  <dd>{Math.round(claim.relevance * 100)}%</dd>
+                </>
+              )}
             </>
+          ) : (
+            decision.payload && (
+              <>
+                <dt>Payload</dt>
+                <dd>{decision.payload}</dd>
+              </>
+            )
           )}
           <dt>Cost</dt>
           <dd>{decision.cost}</dd>
           <dt>Time</dt>
-          <dd>{decision.time}</dd>
+          <dd>{formatTime(decision.time)}</dd>
           <dt>Reversible</dt>
           <dd>{decision.reversible ? "Yes" : "No"}</dd>
         </dl>
