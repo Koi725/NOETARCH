@@ -1,6 +1,6 @@
 [project]
 name = "noetarch-backend"
-version = "0.0.1"
+version = "1.0.0"
 description = "NOETARCH backend — secure modular monolith (FastAPI)."
 requires-python = ">=3.11"
 dependencies = [
