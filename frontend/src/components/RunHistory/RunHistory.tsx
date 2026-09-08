@@ -184,46 +184,8 @@ function RunRow({
         </div>
 
         <div className="no-run-row__actions">
-          {run.status !== "running" && (
-            <>
-              {replayState === "idle" && (
-                <button
-                  type="button"
-                  className="no-run-action-btn"
-                  onClick={handleReplayClick}
-                  aria-label={`Replay run ${run.id}`}
-                >
-                  Replay
-                </button>
-              )}
-              {replayState === "confirming" && (
-                <div className="no-run-replay-confirm" role="group" aria-label="Confirm replay">
-                  <p className="no-run-replay-note">
-                    Replay will create a new run with the same recipe and parameters.
-                  </p>
-                  <button
-                    type="button"
-                    className="no-run-action-btn no-run-action-btn--primary"
-                    onClick={handleConfirmReplay}
-                  >
-                    Start replay (simulated)
-                  </button>
-                  <button
-                    type="button"
-                    className="no-run-action-btn"
-                    onClick={handleCancelReplay}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              )}
-              {replayState === "started" && (
-                <div role="status" aria-live="polite" className="no-run-replay-started">
-                  Replay started (simulated)
-                </div>
-              )}
-            </>
-          )}
+          {/* Real, zero-cost deep-links first: they re-open this run's frozen evidence and
+              decisions deterministically by run_id (no re-run, no new API cost). */}
           {isRoutableRunId(run.id) ? (
             <>
               <Link
@@ -251,6 +213,49 @@ function RunRow({
             >
               Evidence <span className="no-run-export-note">(export only)</span>
             </button>
+          )}
+          {/* Replay is a labelled preview: a true replay re-runs the pipeline (new cost +
+              egress) and is deferred to a write-milestone, so nothing is re-run here. */}
+          {run.status !== "running" && (
+            <>
+              {replayState === "idle" && (
+                <button
+                  type="button"
+                  className="no-run-action-btn no-run-action-btn--ghost"
+                  onClick={handleReplayClick}
+                  aria-label={`Replay run ${run.id} (preview only — nothing is re-run)`}
+                >
+                  Replay <span className="no-run-export-note">(preview)</span>
+                </button>
+              )}
+              {replayState === "confirming" && (
+                <div className="no-run-replay-confirm" role="group" aria-label="Replay preview">
+                  <p className="no-run-replay-note">
+                    Preview only. A real replay re-runs the pipeline with new cost and egress and
+                    is not wired yet — nothing will be re-run.
+                  </p>
+                  <button
+                    type="button"
+                    className="no-run-action-btn"
+                    onClick={handleConfirmReplay}
+                  >
+                    Show preview
+                  </button>
+                  <button
+                    type="button"
+                    className="no-run-action-btn"
+                    onClick={handleCancelReplay}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              )}
+              {replayState === "started" && (
+                <div role="status" aria-live="polite" className="no-run-replay-started">
+                  Preview only — nothing was re-run.
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

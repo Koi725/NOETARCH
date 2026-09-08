@@ -57,12 +57,14 @@
 .no-run-action-btn:focus-visible { outline: var(--focus-ring); outline-offset: var(--focus-offset); }
 .no-run-action-btn:disabled { opacity: .5; cursor: not-allowed; }
 .no-run-action-btn--primary { border-color: var(--ok); background: var(--ok-bg); color: var(--ok-text); }
+/* Demoted: the Replay preview reads as secondary next to the real Evidence/Decisions links. */
+.no-run-action-btn--ghost { border-style: dashed; color: var(--ink3); }
 .no-run-export-note { color: var(--ink4); font-size: 11px; }
 
 /* Replay confirm */
 .no-run-replay-confirm { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; max-width: 260px; }
 .no-run-replay-note { margin: 0; color: var(--ink2); font: 400 12px/1.45 var(--font-body); text-align: right; text-wrap: pretty; }
-.no-run-replay-started { color: var(--ok-text); font: 700 12px/1 var(--font-body); padding: 6px 10px; background: var(--ok-bg); border: 1px solid var(--ok); }
+.no-run-replay-started { color: var(--ink3); font: 600 12px/1 var(--font-body); padding: 6px 10px; background: var(--panel); border: 1px dashed var(--btnline); }
 
 /* Comparison panel */
 .no-run-compare-panel { margin: 20px 32px 32px; border: 1px solid var(--line); background: var(--panel); animation: noRise .4s cubic-bezier(.2,.8,.2,1) both; }
