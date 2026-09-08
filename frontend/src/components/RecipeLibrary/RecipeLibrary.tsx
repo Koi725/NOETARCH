@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useId } from "react";
+import Link from "next/link";
 import { fetchRecipes } from "@/services/RecipeService";
 import type {
   Recipe,
@@ -9,6 +10,19 @@ import type {
 } from "./RecipeLibrary_types";
 import { useScreenTour, RecipesSkeleton, RECIPES_TOUR_KEY, RECIPES_TOUR_STEPS } from "@/components/ui";
 import "@/tailwind/components/RecipeLibrary/RecipeLibrary.css";
+
+// Build a Live-run launcher URL that prefills the New-run form from a recipe's declared
+// defaults. Only fields the recipe actually specifies are added — nothing is fabricated.
+function launcherHref(recipe: Recipe | CustomRecipe): string | null {
+  const p = recipe.prefill;
+  if (!p) return null;
+  const params = new URLSearchParams({ template: recipe.name });
+  if (p.maxResults != null) params.set("max", String(p.maxResults));
+  if (p.budgetUsd != null) params.set("budget", String(p.budgetUsd));
+  if (p.yearFrom != null) params.set("year_from", String(p.yearFrom));
+  if (p.yearTo != null) params.set("year_to", String(p.yearTo));
+  return `/live-run?${params.toString()}`;
+}
 
 function RecipeCard({
   recipe,
@@ -28,6 +42,7 @@ function RecipeCard({
   const [nameInput, setNameInput] = useState("");
 
   const displayName = customName ?? recipe.name;
+  const launchHref = launcherHref(recipe);
 
   return (
     <article className={`no-recipe-card${isExpanded ? " is-expanded" : ""}`}>
@@ -114,6 +129,15 @@ function RecipeCard({
           </div>
 
           <div className="no-recipe-panel__actions">
+            {launchHref && (
+              <Link
+                href={launchHref}
+                className="no-recipe-action-btn no-recipe-action-btn--use"
+                aria-label={`Use "${displayName}" as a run template — prefills the New-run form`}
+              >
+                Use as run template
+              </Link>
+            )}
             <button
               type="button"
               className="no-recipe-action-btn no-recipe-action-btn--duplicate"
@@ -246,9 +270,11 @@ function RecipeLibraryView({ recipes }: { recipes: Recipe[] }) {
   return (
     <main className="no-recipe-library" aria-label="Recipe library">
       <header className="no-page-header">
-        <h1 id="recipes-header" className="no-page-title">Recipes · Save time with reusable workflows</h1>
+        <h1 id="recipes-header" className="no-page-title">Templates · reusable run setups</h1>
         <p className="no-prototype-notice" role="note">
-          Simulated · no backend
+          Templates (preview) · &ldquo;Use as run template&rdquo; prefills the New-run form. Recipe
+          steps are illustrative — the live runner executes the plan&rarr;retrieve&rarr;screen
+          pipeline.
         </p>
       </header>
 

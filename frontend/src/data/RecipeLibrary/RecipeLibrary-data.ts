@@ -21,6 +21,7 @@ export const recipes: Recipe[] = [
     providers: ["On-device model", "OpenAlex (free)", "Crossref (free)"],
     privacyPolicy:
       "All data stays on your device. No information leaves your network.",
+    prefill: { maxResults: 100 },
   },
   {
     id: "rec-002",
@@ -60,6 +61,7 @@ export const recipes: Recipe[] = [
     ],
     privacyPolicy:
       "Abstract text is sent to Anthropic for screening. You approve this at step 4.",
+    prefill: { maxResults: 100, budgetUsd: 4 },
   },
   {
     id: "rec-003",

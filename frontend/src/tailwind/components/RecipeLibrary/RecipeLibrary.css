@@ -52,6 +52,8 @@
 .no-recipe-action-btn { display: inline-flex; align-items: center; min-height: 38px; padding: 9px 14px; border: 1px solid var(--btnline); background: transparent; color: var(--ink2); font: 600 12px/1 var(--font-body); cursor: pointer; }
 .no-recipe-action-btn:hover { border-color: var(--accent); color: var(--ink); }
 .no-recipe-action-btn:focus-visible { outline: var(--focus-ring); outline-offset: var(--focus-offset); }
+.no-recipe-action-btn--use { border-color: var(--accent); background: var(--accent); color: var(--accent-ink); text-decoration: none; }
+.no-recipe-action-btn--use:hover { filter: brightness(1.06); color: var(--accent-ink); }
 .no-recipe-action-btn--duplicate { border-color: var(--accent); color: var(--accent-text); }
 .no-recipe-action-btn--duplicate:hover { background: var(--accent-soft); }
 .no-recipe-action-btn--save { border-color: var(--ok); color: var(--ok-text); background: var(--ok-bg); }
