@@ -84,6 +84,20 @@
   color: var(--ink3);
 }
 
+.no-launch-template-note {
+  margin: 0 0 16px;
+  padding: 11px 14px;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  background: var(--accent-soft);
+  color: var(--ink2);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.no-launch-template-note strong {
+  color: var(--ink);
+}
+
 .no-launch-actions {
   display: flex;
   justify-content: flex-end;

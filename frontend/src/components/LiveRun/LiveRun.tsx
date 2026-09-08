@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useId, useState } from "react";
+import { useCallback, useEffect, useId, useState } from "react";
 import Link from "next/link";
 import { RunUnavailableError, startRun } from "@/services/RunService";
 import type {
@@ -64,6 +64,32 @@ export function LiveRun() {
   const [result, setResult] = useState<RunResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [gated, setGated] = useState(false);
+  const [template, setTemplate] = useState<string | null>(null);
+
+  // Prefill from the URL (e.g. arriving from a Recipes "Use as run template" link). This syncs
+  // an external browser API (location) that isn't available during SSR into local state exactly
+  // once on mount, which keeps the static prerender and the client hydration in agreement — the
+  // one legitimate case the blanket set-state-in-effect lint rule doesn't distinguish.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const sp = new URLSearchParams(window.location.search);
+    const patch: Partial<FormValues> = {};
+    const q = sp.get("q");
+    if (q) patch.question = q.slice(0, 500);
+    const max = toIntOrNull(sp.get("max") ?? "");
+    if (max != null) patch.maxResults = String(max);
+    const budget = toFloatOrNull(sp.get("budget") ?? "");
+    if (budget != null) patch.budget = String(budget);
+    const yearFrom = toIntOrNull(sp.get("year_from") ?? "");
+    if (yearFrom != null) patch.yearFrom = String(yearFrom);
+    const yearTo = toIntOrNull(sp.get("year_to") ?? "");
+    if (yearTo != null) patch.yearTo = String(yearTo);
+    const t = sp.get("template");
+    /* eslint-disable react-hooks/set-state-in-effect -- one-shot sync from window.location */
+    if (t) setTemplate(t.slice(0, 80));
+    if (Object.keys(patch).length > 0) setForm((f) => ({ ...f, ...patch }));
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, []);
 
   const questionId = useId();
   const yearFromId = useId();
@@ -129,6 +155,13 @@ export function LiveRun() {
           allowlisted egress guard; nothing the model returns is auto-executed.
         </p>
       </header>
+
+      {template && phase === "form" && (
+        <div className="no-launch-template-note" role="status">
+          Starting from template <strong>{template}</strong>. The fields below are prefilled and
+          fully editable — add your research question and start.
+        </div>
+      )}
 
       {(phase === "form" || phase === "running") && (
         <form className="no-launch-form" onSubmit={handleStart} aria-busy={phase === "running"}>
@@ -285,6 +318,9 @@ function RunSummary({ result, onReset }: { result: RunResult; onReset: () => voi
   const isFailed = result.status === "failed";
   const elapsed = formatElapsed(result.elapsedMs);
   const findingCount = result.synthesis?.findings.length ?? 0;
+  // `frozen` is the unique set kept after dedup; `deduplicated` is how many were merged out.
+  // Total found = unique + merged. Report all three plainly rather than conflating them.
+  const found = result.frozen + result.deduplicated;
   return (
     <section className="no-launch-summary" aria-labelledby="run-summary-heading">
       <div className="no-launch-summary-head">
@@ -303,8 +339,8 @@ function RunSummary({ result, onReset }: { result: RunResult; onReset: () => voi
 
       {/* One-line pipeline narrative: found → screened → included → synthesis, with cost + time. */}
       <p className="no-launch-narrative">
-        Found <strong>{result.frozen}</strong> paper{result.frozen === 1 ? "" : "s"}
-        {result.deduplicated > 0 && ` (${result.deduplicated} duplicate merged)`} → screened{" "}
+        Found <strong>{found}</strong> paper{found === 1 ? "" : "s"} · <strong>{result.deduplicated}</strong>{" "}
+        merged · <strong>{result.frozen}</strong> unique → screened{" "}
         <strong>{result.screened}</strong> → included <strong>{result.included}</strong>
         {result.synthesis && (
           <>
@@ -328,8 +364,9 @@ function RunSummary({ result, onReset }: { result: RunResult; onReset: () => voi
       )}
 
       <div id="live-run-kpis" className="no-launch-metrics" role="region" aria-label="Run metrics">
-        <Metric label="Frozen" value={result.frozen} />
-        <Metric label="Deduplicated" value={result.deduplicated} />
+        <Metric label="Found" value={found} />
+        <Metric label="Merged" value={result.deduplicated} />
+        <Metric label="Unique" value={result.frozen} />
         <Metric label="Screened" value={result.screened} />
         <Metric label="Include" value={result.included} tone="ok" />
         <Metric label="Exclude" value={result.excluded} />
