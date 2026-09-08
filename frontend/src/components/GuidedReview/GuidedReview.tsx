@@ -227,7 +227,9 @@ function GuidedReviewView({ data }: { data: GuidedReviewData }) {
           >
             Keyboard shortcuts
           </button>
-          <div className="no-prototype-notice" role="note">Prototype · Mock data</div>
+          <div className="no-prototype-notice" role="note">
+            Preview · sample data — decisions here are not saved
+          </div>
         </div>
       </div>
 

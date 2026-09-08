@@ -2,6 +2,8 @@ export interface NavigationItem {
   label: string;
   href: string;
   available: boolean;
+  // Reachable but not fully wired — shown with a "Preview" tag so nothing oversells itself.
+  preview?: boolean;
 }
 
 export interface NavigationGroup {

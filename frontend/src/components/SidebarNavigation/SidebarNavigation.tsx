@@ -82,6 +82,14 @@ export function SidebarNavigation({
                   >
                     {active ? <span className="no-nav-active-bar" aria-hidden="true" /> : null}
                     <span>{item.label}</span>
+                    {item.preview ? (
+                      <span
+                        className="no-nav-availability no-nav-availability--preview"
+                        aria-hidden="true"
+                      >
+                        Preview
+                      </span>
+                    ) : null}
                   </Link>
                 ) : (
                   <span className="no-nav-item is-disabled" aria-disabled="true" key={item.href}>

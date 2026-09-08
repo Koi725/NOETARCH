@@ -7,6 +7,7 @@ export type NavigationItem = {
   label: string;
   href: string;
   available: boolean;
+  preview?: boolean;
 };
 
 export const navigationGroups: NavigationGroup[] = [
@@ -22,8 +23,8 @@ export const navigationGroups: NavigationGroup[] = [
   {
     label: "Work",
     items: [
-      { label: "Guided review", href: "/guided-review", available: true },
-      { label: "Recipes", href: "/recipes", available: true },
+      { label: "Guided review", href: "/guided-review", available: true, preview: true },
+      { label: "Recipes", href: "/recipes", available: true, preview: true },
       { label: "History & replay", href: "/history", available: true },
     ],
   },
